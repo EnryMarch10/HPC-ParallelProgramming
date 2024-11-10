@@ -120,7 +120,7 @@ Run with:
 #include <ctype.h>
 #include <string.h>
 #include <assert.h>
-#include <omp.h>
+#include <time.h>
 
 #define ALPHA_SIZE 26
 
@@ -178,11 +178,11 @@ int main(void)
 
     const size_t len = fread(text, 1, size - 1, stdin);
     text[len] = '\0'; /* put a termination mark at the end of the text */
-    const double t_start = omp_get_wtime();
+    const clock_t t_start = clock();
     make_hist(text, hist);
-    const double elapsed = omp_get_wtime() - t_start;
+    const clock_t t_end = clock();
     print_hist(hist);
-    fprintf(stderr, "!! Elapsed time: %.2f s !!\n", elapsed);
+    printf("!! Elapsed time: %.2f s !!\n", ((double) (t_end - t_start) / CLOCKS_PER_SEC));
     free(text);
     return EXIT_SUCCESS;
 }

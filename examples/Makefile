@@ -136,7 +136,7 @@ cuda-rotate cuda-matmul: NVCFLAGS += -lm
 
 clean:
 	\rm -f $(EXE) $(DIR_OBJ)/omp-mandelbrot.o $(DIR_OBJ)/gfx.o $(DIR_LST)/simd-vsum-vector.lst $(DIR_LST)/simd-vsum-auto.lst \
-	$(DIR_ASM)/simd-vsum-vector.s $(DIR_ASM)/simd-vsum-auto.s
+	$(DIR_ASM)/simd-vsum-vector.s $(DIR_ASM)/simd-vsum-auto.s $(DIR_LST)/simd-vsum-vector.out $(DIR_LST)/simd-vsum-auto.out
 	\rmdir --ignore-fail-on-non-empty $(DIRS)
 
 distclean: clean
