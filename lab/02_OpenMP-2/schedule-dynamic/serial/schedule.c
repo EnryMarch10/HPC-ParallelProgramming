@@ -71,7 +71,7 @@ Example:
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <omp.h>
+#include <time.h>
 
 /* Recursive computation of the n-th Fibonacci number, for n=0, 1, 2, ...
    Do not parallelize this function. */
@@ -210,7 +210,7 @@ int main(int argc, char* argv[])
     int n = 1024;
     const int max_n = 512 * 1024 * 1024;
     int *vin, *vout;
-    double t_start, t_elapsed;
+    clock_t t_start, t_end;
 
     if (argc > 2) {
         fprintf(stderr, "Usage: %s [n]\n", argv[0]);
@@ -236,23 +236,23 @@ int main(int argc, char* argv[])
      ** Test static schedule implementation
      **/
     fill(vin, vout, n);
-    t_start = omp_get_wtime();
+    t_start = clock();
     do_static(vin, vout, n);
-    t_elapsed = omp_get_wtime() - t_start;
+    t_end = clock();
     is_correct(vin, vout, n);
 
-    printf("!! Elapsed time (static schedule): %.2f s !!\n", t_elapsed);
+    printf("!! Elapsed time: %.2f s !!\n", ((double) (t_end - t_start) / CLOCKS_PER_SEC));
 
     /**
      ** Test dynamic schedule implementation
      **/
     fill(vin, vout, n);
-    t_start = omp_get_wtime();
+    t_start = clock();
     do_dynamic(vin, vout, n);
-    t_elapsed = omp_get_wtime() - t_start;
+    t_end = clock();
     is_correct(vin, vout, n);
 
-    printf("!! Elapsed time (dynamic schedule): %.2f s !!\n", t_elapsed);
+    printf("!! Elapsed time: %.2f s !!\n", ((double) (t_end - t_start) / CLOCKS_PER_SEC));
 
     free(vin);
     free(vout);

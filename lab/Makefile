@@ -4,6 +4,9 @@ LAB1 := lab1
 LAB2 := lab2
 LABS := $(LAB1) $(LAB2)
 
+DIR_LAB1 := 01_OpenMP-1
+DIR_LAB2 := 02_OpenMP-2
+
 all: $(LABS)
 
 help:
@@ -19,7 +22,7 @@ help:
 
 $(LAB1):
 	@echo "*** TARGET - $(LAB1) ***"
-	for TARGET in `find ./01_OpenMP-1 -mindepth 1 -maxdepth 1 -type d -print`; do\
+	for TARGET in `find ./$(DIR_LAB1) -mindepth 1 -maxdepth 1 -type d -print`; do\
 		if ! make -C "$$TARGET"; then\
 			exit $$?;\
 		fi;\
@@ -27,16 +30,21 @@ $(LAB1):
 
 $(LAB2):
 	@echo "*** TARGET - $(LAB2) ***"
-	@echo "Error! This command is not implemented yet" >&2
-
-# for TARGET in `find ./01_OpenMP-1 -mindepth 1 -maxdepth 1 -type d -print`; do\
-# 	if ! make -C "$$TARGET" clean; then\
-# 		exit $$?;\
-# 	fi;\
-# done
+	for TARGET in `find ./$(DIR_LAB2) -mindepth 1 -maxdepth 1 -type d -print`; do\
+		if ! make -C "$$TARGET"; then\
+			exit $$?;\
+		fi;\
+	done
 
 clean:
-	for TARGET in `find ./01_OpenMP-1 -mindepth 1 -maxdepth 1 -type d -print`; do\
+	@echo "*** TARGET - $(LAB1) ***"
+	for TARGET in `find ./$(DIR_LAB1) -mindepth 1 -maxdepth 1 -type d -print`; do\
+		if ! make -C "$$TARGET" clean; then\
+			exit $$?;\
+		fi;\
+	done
+	@echo "*** TARGET - $(LAB2) ***"
+	for TARGET in `find ./$(DIR_LAB2) -mindepth 1 -maxdepth 1 -type d -print`; do\
 		if ! make -C "$$TARGET" clean; then\
 			exit $$?;\
 		fi;\

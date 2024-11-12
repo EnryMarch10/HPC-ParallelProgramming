@@ -120,7 +120,7 @@ int cat_map_rectime(int n)
                 }
             }
             if (i == MAX_IT - 1 && (x_cur != x || y_cur != y)) {
-#pragma omp atomic
+#pragma omp critical // atomic => used before but gives ERROR!
                 exit_flag = 1;
             }
             it[x + y * n] = i + 1;
