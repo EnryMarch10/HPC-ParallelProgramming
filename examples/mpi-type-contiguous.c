@@ -36,9 +36,9 @@
 
 #define SIZE 4
 
-int main( int argc, char *argv[] )
+int main(int argc, char *argv[])
 {
-    int numtasks, rank, source=0, tag=1, i;
+    int numtasks, rank, source = 0, tag = 1, i;
 
     float a[SIZE][SIZE] =
         {{ 1.0,  2.0,  3.0,  4.0},
@@ -56,25 +56,25 @@ int main( int argc, char *argv[] )
 
     /* create contiguous derived data type */
     MPI_Type_contiguous(SIZE,      /* count   */
-			MPI_FLOAT, /* oldtype */
-			&rowtype   /* newtype */
-			);
+                        MPI_FLOAT, /* oldtype */
+                        &rowtype   /* newtype */
+                        );
     MPI_Type_commit(&rowtype);
 
-    if ( rank == 0 && numtasks == 1 ) {
+    if (rank == 0 && numtasks == 1) {
         fprintf(stderr, "FATAL: you must run at least 2 processes\n");
         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
 
     if (rank == 0) {
         /* The master sends one element of rowtype to all other tasks */
-        for (i=1; i<numtasks; i++)
+        for (i = 1; i < numtasks; i++) {
             MPI_Send(&a[i % SIZE][0], 1, rowtype, i, tag, MPI_COMM_WORLD);
+        }
     } else {
         /* all other tasks receive rowtype data from process 0 */
         MPI_Recv(b, SIZE, MPI_FLOAT, source, tag, MPI_COMM_WORLD, &stat);
-        printf("rank= %d received %3.1f %3.1f %3.1f %3.1f\n",
-               rank, b[0], b[1], b[2], b[3]);
+        printf("rank= %d received %3.1f %3.1f %3.1f %3.1f\n", rank, b[0], b[1], b[2], b[3]);
     }
 
     /* free datatype when done using it */

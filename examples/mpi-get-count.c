@@ -37,13 +37,13 @@
 
 #define BUFLEN 16
 
-int main( int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int rank, buf[BUFLEN] = {0};
     int count, i;
     MPI_Status status;
     MPI_Init(&argc, &argv);
-    MPI_Comm_rank( MPI_COMM_WORLD, &rank );
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     /* Process 0 sends, Process 1 receives */
     if (rank == 0) {
@@ -52,18 +52,17 @@ int main( int argc, char *argv[])
            deterministic) */
         srand(time(NULL));
         /* Fills the buffer with a random number of integers */
-        count = 1 + rand()%BUFLEN;
-        for (i=0; i<count; i++) {
+        count = 1 + rand() % BUFLEN;
+        for (i = 0; i < count; i++) {
             buf[i] = i;
         }
         MPI_Send(buf, count, MPI_INT, 1, 0, MPI_COMM_WORLD);
         printf("Sent %d integers\n", count);
-    }
-    else if (rank == 1) {
-        MPI_Recv(buf, BUFLEN, MPI_INT, 0, 0, MPI_COMM_WORLD, &status );
+    } else if (rank == 1) {
+        MPI_Recv(buf, BUFLEN, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
         MPI_Get_count(&status, MPI_INT, &count);
-        printf( "Received %d integers: ", count );
-        for (i=0; i<count; i++) {
+        printf("Received %d integers: ", count);
+        for (i = 0; i < count; i++) {
             printf("%d ", buf[i]);
         }
         printf("\n");

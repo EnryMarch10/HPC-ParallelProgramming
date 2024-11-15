@@ -32,15 +32,15 @@
 #include <stdlib.h>
 #include <mpi.h>
 
-int main( int argc, char *argv[] )
+int main(int argc, char *argv[])
 {
     int rank, size, len;
     char hostname[MPI_MAX_PROCESSOR_NAME];
-    MPI_Init( &argc, &argv );	/* no MPI calls before this line */
-    MPI_Comm_rank( MPI_COMM_WORLD, &rank );
-    MPI_Comm_size( MPI_COMM_WORLD, &size );
+    MPI_Init(&argc, &argv);	/* no MPI calls before this line */
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size( MPI_COMM_WORLD, &size);
     MPI_Get_processor_name(hostname, &len);
     printf("Greetings from process %d of %d running on %s\n", rank, size, hostname);
-    MPI_Finalize();		/* no MPI calls after this line */
+    MPI_Finalize(); /* no MPI calls after this line */
     return EXIT_SUCCESS;
 }

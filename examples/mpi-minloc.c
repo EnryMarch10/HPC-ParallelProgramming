@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 {
     struct { /* This struct corresponds to the predefined type MPI_DOUBLE_INT */
         double val;
-        int   idx;
+        int idx;
     } in, out;
 
     int my_rank;
@@ -52,17 +52,17 @@ int main(int argc, char *argv[])
     in.val = my_rank * 1.5;
     in.idx = 1 + my_rank;
 
-    MPI_Reduce( &in,            /* sendbuf      */
-                &out,           /* recvbuf      */
-                1,              /* count        */
-                MPI_DOUBLE_INT, /* datatype     */
-                MPI_MAXLOC,     /* operator     */
-                0,              /* root         */
-                MPI_COMM_WORLD  /* communicator */
-                );
+    MPI_Reduce(&in,            /* sendbuf      */
+               &out,           /* recvbuf      */
+               1,              /* count        */
+               MPI_DOUBLE_INT, /* datatype     */
+               MPI_MINLOC,     /* operator     */
+               0,              /* root         */
+               MPI_COMM_WORLD  /* communicator */
+               );
 
     /* At this point, the result is at process 0 */
-    if (0 == my_rank) {
+    if (my_rank == 0) {
         /* read ranks out */
         printf("The minimum is %f with index %d\n", out.val, out.idx);
     }

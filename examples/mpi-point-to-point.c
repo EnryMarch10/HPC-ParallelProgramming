@@ -34,7 +34,7 @@
 #include <stdlib.h>
 #include <mpi.h>
 
-int main( int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int my_rank, comm_size, buf;
     MPI_Status status;
@@ -42,7 +42,7 @@ int main( int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
 
-    if (0 == my_rank && comm_size < 2) {
+    if (my_rank == 0 && comm_size < 2) {
         fprintf(stderr, "FATAL: you must run at least 2 processes\n");
         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
@@ -50,24 +50,23 @@ int main( int argc, char *argv[])
     /* Process 0 sends, Process 1 receives */
     if (my_rank == 0) {
         buf = 123456;
-        MPI_Send( &buf,         /* send buffer  */
-                  1,            /* count        */
-                  MPI_INT,      /* datatype     */
-                  1,            /* destination  */
-                  0,            /* tag          */
-                  MPI_COMM_WORLD /* communicator */
-                  );
-    }
-    else if (my_rank == 1) {
-        MPI_Recv( &buf,         /* receive buffer */
-                  1,            /* count        */
-                  MPI_INT,      /* datatype     */
-                  0,            /* source       */
-                  0,            /* tag          */
-                  MPI_COMM_WORLD, /* communicator */
-                  &status       /* status       */
-                  );
-        printf( "Received %d\n", buf );
+        MPI_Send(&buf,         /* send buffer  */
+                 1,            /* count        */
+                 MPI_INT,      /* datatype     */
+                 1,            /* destination  */
+                 0,            /* tag          */
+                 MPI_COMM_WORLD /* communicator */
+                 );
+    } else if (my_rank == 1) {
+        MPI_Recv(&buf,         /* receive buffer */
+                 1,            /* count        */
+                 MPI_INT,      /* datatype     */
+                 0,            /* source       */
+                 0,            /* tag          */
+                 MPI_COMM_WORLD, /* communicator */
+                 &status       /* status       */
+                 );
+        printf("Received %d\n", buf);
     }
 
     MPI_Finalize();

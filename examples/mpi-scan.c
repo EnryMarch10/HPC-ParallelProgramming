@@ -46,23 +46,24 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
 
-    local_x = (int *)malloc(local_N * sizeof(*local_x));
+    local_x = (int *) malloc(local_N * sizeof(*local_x));
+
     for (i = 0; i < local_N; i++) {
-	local_x[i] = i + my_rank * local_N;
+        local_x[i] = i + my_rank * local_N;
     }
 
     scan_x = (int *)malloc(local_N * sizeof(*scan_x));
 
     MPI_Scan(local_x,		/* sendbuf      */
-	     scan_x,		/* recvbuf      */
-	     local_N,		/* count        */
-	     MPI_INT,		/* datatype     */
-	     MPI_SUM,		/* operator     */
-	     MPI_COMM_WORLD     /* communicator */
+             scan_x,		/* recvbuf      */
+             local_N,		/* count        */
+             MPI_INT,		/* datatype     */
+             MPI_SUM,		/* operator     */
+             MPI_COMM_WORLD /* communicator */
              );
 
     for (i = 0; i < local_N; i++) {
-	printf("rank=%d scan_x[%d]=%d\n", my_rank, i, scan_x[i]);
+        printf("rank=%d scan_x[%d]=%d\n", my_rank, i, scan_x[i]);
     }
 
     free(local_x);

@@ -36,9 +36,9 @@
 
 #define SIZE 4
 
-int main( int argc, char *argv[] )
+int main(int argc, char *argv[])
 {
-    int numtasks, rank, source=0, tag=1, i;
+    int numtasks, rank, source = 0, tag = 1, i;
 
     float a[SIZE][SIZE] =
         {{ 1.0,  2.0,  3.0,  4.0},
@@ -55,30 +55,30 @@ int main( int argc, char *argv[] )
     MPI_Comm_size(MPI_COMM_WORLD, &numtasks);
 
     /* create contiguous derived data type */
-    MPI_Type_vector(SIZE,       /* number of blocks                           */
-		    1,	        /* n. of elements within each block           */
-		    SIZE,       /* n. of elements between start of each block */
-		    MPI_FLOAT,  /* type of elements of each block             */
-		    &columntype /* newtype                                    */
-		    );
+    MPI_Type_vector(SIZE,       /* number of blocks                                      */
+                    1,          /* n. of elements within each block                      */
+                    SIZE,       /* n. of elements between start of each block            */
+                    MPI_FLOAT,  /* type of elements of each block, can be a derived type */
+                    &columntype /* newtype                                               */
+                    );
     MPI_Type_commit(&columntype);
 
-    if ( rank == 0 && numtasks == 1 ) {
+    if (rank == 0 && numtasks == 1) {
         fprintf(stderr, "FATAL: you must run at least 2 processes\n");
         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
 
     if (rank == 0) {
         /* The master sends the second column to all other processes */
-        for (i=1; i<numtasks; i++)
+        for (i = 1; i < numtasks; i++) {
             MPI_Send(&a[0][i % numtasks], 1, columntype, i, tag, MPI_COMM_WORLD);
+        }
     } else {
         /* All other tasks can read the columntype as a (conventional)
            array of SIZE elements of type MPI_FLOAT; in this case the
            elements are received and stored contiguously in b */
         MPI_Recv(b, SIZE, MPI_FLOAT, source, tag, MPI_COMM_WORLD, &stat);
-        printf("rank= %d received %3.1f %3.1f %3.1f %3.1f\n",
-               rank, b[0], b[1], b[2], b[3]);
+        printf("rank= %d received %3.1f %3.1f %3.1f %3.1f\n", rank, b[0], b[1], b[2], b[3]);
     }
 
     /* free datatype when done using it */

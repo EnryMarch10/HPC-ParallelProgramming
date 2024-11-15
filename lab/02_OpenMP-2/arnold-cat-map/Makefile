@@ -1,5 +1,8 @@
 SHELL = /bin/bash
 
+INCLUDE_GLOBAL := ../../include
+INCLUDE_LOCAL := include
+
 SERIAL := serial
 PARALLEL := parallel
 SOLUTION := solution
@@ -12,10 +15,12 @@ DIR_OBJ := $(DIR_BUILD)/obj
 
 DIRS := $(DIR_BIN) $(DIR_OBJ) $(DIR_BUILD)
 
+SOURCE_1_DEP_1 := hpc
+
 SOURCE_1_SERIAL := cat-map
 SOURCE_1_PARALLEL := omp-$(SOURCE_1_SERIAL)
-SOURCE_1_PARALLEL_DIP_1 = pgm
-SOURCE_1_PARALLEL_ALL = $(SOURCE_1_PARALLEL) $(SOURCE_1_PARALLEL_DIP_1)
+SOURCE_1_PARALLEL_DEP_1 = pgm
+SOURCE_1_PARALLEL_ALL = $(SOURCE_1_PARALLEL) $(SOURCE_1_PARALLEL_DEP_1)
 SOURCE_1_SOLUTION := sol-$(SOURCE_1_PARALLEL)
 
 SOURCE_2_SERIAL := cat-map-rectime
@@ -58,9 +63,9 @@ $(DIR_BIN)/$(SOURCE_1_SERIAL): $(DIR_OBJ)/$(SOURCE_1_SERIAL).o
 	@mkdir -p $(DIR_BIN)
 	$(CC) $(CFLAGS) $^ -o $@
 
-$(DIR_OBJ)/$(SOURCE_1_SERIAL).o: $(SERIAL)/$(SOURCE_1_SERIAL).c
+$(DIR_OBJ)/$(SOURCE_1_SERIAL).o: $(SERIAL)/$(SOURCE_1_SERIAL).c $(INCLUDE_GLOBAL)/$(SOURCE_1_DEP_1).h
 	@mkdir -p $(DIR_OBJ)
-	$(CC) $(CFLAGS) -c $^ -o $@
+	$(CC) $(CFLAGS) -c $< -o $@ -I$(INCLUDE_GLOBAL)
 
 $(SOURCE_2_SERIAL): $(DIR_BIN)/$(SOURCE_2_SERIAL)
 
@@ -83,13 +88,13 @@ $(DIR_BIN)/$(SOURCE_1_PARALLEL): $(addsuffix .o, $(addprefix $(DIR_OBJ)/, $(SOUR
 	@mkdir -p $(DIR_BIN)
 	$(CC) $(CFLAGS) $^ -o $@
 
-$(DIR_OBJ)/$(SOURCE_1_PARALLEL).o: $(PARALLEL)/$(SOURCE_1_PARALLEL).c
+$(DIR_OBJ)/$(SOURCE_1_PARALLEL).o: $(PARALLEL)/$(SOURCE_1_PARALLEL).c $(INCLUDE_GLOBAL)/$(SOURCE_1_DEP_1).h $(INCLUDE_LOCAL)/$(SOURCE_1_PARALLEL_DEP_1).h
 	@mkdir -p $(DIR_OBJ)
-	$(CC) $(CFLAGS) -c $^ -o $@
+	$(CC) $(CFLAGS) -c $< -o $@ -I$(INCLUDE_GLOBAL) -I$(INCLUDE_LOCAL)
 
-$(DIR_OBJ)/$(SOURCE_1_PARALLEL_DIP_1).o: $(PARALLEL)/$(SOURCE_1_PARALLEL_DIP_1).c
+$(DIR_OBJ)/$(SOURCE_1_PARALLEL_DEP_1).o: $(INCLUDE_LOCAL)/$(SOURCE_1_PARALLEL_DEP_1).c $(INCLUDE_LOCAL)/$(SOURCE_1_PARALLEL_DEP_1).h
 	@mkdir -p $(DIR_OBJ)
-	$(CC) $(CFLAGS) -c $^ -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 # parallel 2 - version 1
 $(SOURCE_2_PARALLEL_1): CFLAGS += -fopenmp
@@ -161,9 +166,9 @@ $(DIR_BIN)/$(SOURCE_1_SOLUTION): $(DIR_OBJ)/$(SOURCE_1_SOLUTION).o
 	@mkdir -p $(DIR_BIN)
 	$(CC) $(CFLAGS) $^ -o $@
 
-$(DIR_OBJ)/$(SOURCE_1_SOLUTION).o: $(SOLUTION)/$(SOURCE_1_SOLUTION).c
+$(DIR_OBJ)/$(SOURCE_1_SOLUTION).o: $(SOLUTION)/$(SOURCE_1_SOLUTION).c $(INCLUDE_GLOBAL)/$(SOURCE_1_DEP_1).h
 	@mkdir -p $(DIR_OBJ)
-	$(CC) $(CFLAGS) -c $^ -o $@
+	$(CC) $(CFLAGS) -c $< -o $@ -I$(INCLUDE_GLOBAL)
 
 clean:
 	-\rm -f $(addprefix $(DIR_BIN)/, $(SOURCES)) \

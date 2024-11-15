@@ -31,7 +31,7 @@
 #include <stdio.h>
 #include "mpi.h"
 
-int main( int argc, char *argv[] )
+int main(int argc, char *argv[])
 {
     int my_rank, comm_sz;
     int count, blocklen, stride;
@@ -51,12 +51,13 @@ int main( int argc, char *argv[] )
     MPI_Type_commit(&vecvec);
     MPI_Aint lb, extent;
     MPI_Type_get_extent(vecvec, &lb, &extent);
-    printf("lb=%d extent=%d\n", (int)lb, (int)extent);
-    for (i=0; i<36; i++) {
-        if (my_rank == 0)
+    printf("lb=%d extent=%d\n", (int) lb, (int) extent);
+    for (i = 0; i < 36; i++) {
+        if (my_rank == 0) {
             v[i] = i;
-        else
+        } else {
             v[i] = -1;
+        }
     }
 
     /* v[] nel processo 0: [0, 1, 2, ... 35];
@@ -78,9 +79,11 @@ int main( int argc, char *argv[] )
                  MPI_ANY_TAG,   /* tag          */
                  MPI_COMM_WORLD,
                  MPI_STATUS_IGNORE);
-        for (i=0; i<36; i++) {
+        for (i = 0; i < 36; i++) {
             printf("[%2d]=%2d ", i, v[i]);
-            if (i % 6 == 5) printf("\n");
+            if (i % 6 == 5) {
+                printf("\n");
+            }
         }
         printf("\n");
     }

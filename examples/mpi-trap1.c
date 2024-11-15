@@ -58,9 +58,9 @@
 /*
  * Function to be integrated
  */
-double f( double x )
+double f(double x)
 {
-    return 4.0/(1.0 + x*x);
+    return 4.0 / (1.0 + x * x);
 }
 
 /*
@@ -68,9 +68,9 @@ double f( double x )
  * rule. The integration interval [a,b] is partitioned into n
  * subintervals of equal size.
  */
-double trap( int my_rank, int comm_sz, double a, double b, int n )
+double trap(int my_rank, int comm_sz, double a, double b, int n)
 {
-    const double h = (b-a)/n;
+    const double h = (b - a) / n;
     const int local_n_start = n * my_rank / comm_sz;
     const int local_n_end = n * (my_rank + 1) / comm_sz;
     double x = a + local_n_start * h;
@@ -78,13 +78,13 @@ double trap( int my_rank, int comm_sz, double a, double b, int n )
     int i;
 
     for (i = local_n_start; i < local_n_end; i++) {
-        my_result += h*(f(x) + f(x+h))/2.0;
+        my_result += h * (f(x) + f(x + h)) / 2.0;
         x += h;
     }
     return my_result;
 }
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
     double a = 0.0, b = 1.0, partial_result, result = 0.0;
     int n = 1000000;
@@ -94,29 +94,28 @@ int main( int argc, char* argv[] )
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
 
-    if ( 4 == argc ) {
+    if (argc == 4) {
         a = atof(argv[1]);
         b = atof(argv[2]);
         n = atoi(argv[3]);
     }
 
     /* All nodes compute their local result */
-    partial_result = trap( my_rank, comm_sz, a, b, n );
+    partial_result = trap(my_rank, comm_sz, a, b, n);
 
-    MPI_Reduce( &partial_result, /* send buffer                 */
-                &result,        /* receive buffer, used only at root */
-                1,              /* number of items to send      */
-                MPI_DOUBLE,     /* data type of elements        */
-                MPI_SUM,        /* reduction operator           */
-                0,              /* who receives the reduction   */
-                MPI_COMM_WORLD  /* communicator                 */
-                );
+    MPI_Reduce(&partial_result, /* send buffer                 */
+               &result,        /* receive buffer, used only at root */
+               1,              /* number of items to send      */
+               MPI_DOUBLE,     /* data type of elements        */
+               MPI_SUM,        /* reduction operator           */
+               0,              /* who receives the reduction   */
+               MPI_COMM_WORLD  /* communicator                 */
+               );
 
-    if ( 0 == my_rank ) {
+    if (my_rank == 0) {
         printf("Area: %f\n", result);
     }
 
     MPI_Finalize();
-
     return EXIT_SUCCESS;
 }

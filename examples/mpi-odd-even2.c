@@ -73,7 +73,7 @@ int buf_len; /* the maximum length of any local buffer */
 #ifndef max
 int max(int a, int b)
 {
-    return (a > b ? a : b);
+    return a > b ? a : b;
 }
 #endif
 
@@ -81,9 +81,11 @@ void print_array(int my_rank, double *v, int n)
 {
     int i;
     printf("rank=%d v=[", my_rank);
-    for (i=0; i<n; i++) {
+    for (i = 0; i < n; i++) {
         printf("%f", v[i]);
-        if (i<n-1) printf(", ");
+        if (i < n-1) {
+            printf(", ");
+        }
     }
     printf("]\n");
 }
@@ -92,29 +94,27 @@ void print_array(int my_rank, double *v, int n)
  * Comparison function used by qsort. Returns -1, 0 or 1 if *x is less
  * than, equal to, or greater than *y
  */
-int compare( const void* x, const void* y )
+int compare(const void *x, const void *y)
 {
-    const double *vx = (const double*)x;
-    const double *vy = (const double*)y;
+    const double *vx = (const double *) x;
+    const double *vy = (const double *) y;
 
-    if ( *vx > *vy ) {
+    if (*vx > *vy) {
         return 1;
-    } else {
-        if ( *vx < *vy )
-            return -1;
-        else
-            return 0;
+    } else if (*vx < *vy) {
+        return -1;
     }
+    return 0;
 }
 
 /**
  * Fill vector v with n random values drawn from the interval [0,1)
  */
-void fill( double* v, int n )
+void fill(double *v, int n)
 {
     int i;
-    for ( i=0; i<n; i++ ) {
-        v[i] = rand() / (double)RAND_MAX;
+    for (i = 0; i < n; i++) {
+        v[i] = rand() / (double) RAND_MAX;
     }
 }
 
@@ -122,13 +122,12 @@ void fill( double* v, int n )
  * Check whether the n vector array v is sorted according to the
  * comparison function compare()
  */
-void check( const double* v, int n )
+void check(const double *v, int n)
 {
     int i;
-    for (i=1; i<n; i++) {
-        if ( compare( &v[i-1], &v[i] ) > 0 ) {
-            printf("Check failed at element %d (v[%d]=%f, v[%d]=%f)\n",
-                   i-1, i-1, v[i-1], i, v[i] );
+    for (i = 1; i < n; i++) {
+        if (compare(&v[i - 1], &v[i]) > 0) {
+            printf("Check failed at element %d (v[%d]=%f, v[%d]=%f)\n", i - 1, i - 1, v[i-1], i, v[i]);
             MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
         }
     }
@@ -142,12 +141,12 @@ void check( const double* v, int n )
  * space and must be allocated by the called with at least
  * `received_n` elements.
  */
-void merge_low( double *local_x, int local_n, double *received_x, int received_n, double* buffer )
+void merge_low(double *local_x, int local_n, double *received_x, int received_n, double *buffer)
 {
     int idx_local = 0, idx_received = 0, idx_buf = 0;
 
-    while ( idx_buf < received_n ) {
-        if ( (idx_received >= received_n) || ((idx_local < local_n) && compare( local_x + idx_local, received_x + idx_received ) < 0) ) {
+    while (idx_buf < received_n) {
+        if ((idx_received >= received_n) || ((idx_local < local_n) && compare(local_x + idx_local, received_x + idx_received) < 0)) {
             buffer[idx_buf] = local_x[idx_local];
             idx_local++;
         } else {
@@ -157,7 +156,7 @@ void merge_low( double *local_x, int local_n, double *received_x, int received_n
         idx_buf++;
     }
 
-    memcpy( local_x, buffer, received_n*sizeof(double) );
+    memcpy(local_x, buffer, received_n * sizeof(double));
 }
 
 /**
@@ -167,11 +166,11 @@ void merge_low( double *local_x, int local_n, double *received_x, int received_n
  * space and must be allocated by the called with at least
  * `received_n` elements.
  */
-void merge_high( double* local_x, int local_n, double *received_x, int received_n, double* buffer )
+void merge_high(double* local_x, int local_n, double *received_x, int received_n, double* buffer)
 {
-    int idx_local = local_n-1, idx_received = received_n-1, idx_buf = received_n-1;
-    while ( idx_buf >= 0 ) {
-        if ( (idx_received < 0) || ((idx_local >= 0) && compare( local_x + idx_local, received_x + idx_received ) > 0) ) {
+    int idx_local = local_n - 1, idx_received = received_n - 1, idx_buf = received_n - 1;
+    while (idx_buf >= 0) {
+        if ((idx_received < 0) || ((idx_local >= 0) && compare(local_x + idx_local, received_x + idx_received) > 0)) {
             buffer[idx_buf] = local_x[idx_local];
             idx_local--;
         } else {
@@ -181,7 +180,7 @@ void merge_high( double* local_x, int local_n, double *received_x, int received_
         idx_buf--;
     }
 
-    memcpy( local_x, buffer, received_n*sizeof(double) );
+    memcpy(local_x, buffer, received_n * sizeof(double));
 }
 
 /**
@@ -192,21 +191,21 @@ void merge_high( double* local_x, int local_n, double *received_x, int received_
  * received by the partner. If no exchange takes places, e.g., because
  * the partner is MPI_PROC_NULL, returns `local_n`.
  */
-int do_sort_exchange( int phase,        /* number of this phase (0..comm_sz-1) */
-                      double *local_x,  /* block from the input array x assigned to this node */
-                      int local_n,      /* length of local_x */
-                      double *received_x, /* block that will be received from the partner */
-                      double *buffer,   /* temporary buffer used for merging */
-                      int my_rank,      /* my rank */
-                      int even_partner, /* partner to use during even phases */
-                      int odd_partner   /* parter to use during odd phases */
-                      )
+int do_sort_exchange(int phase,          /* number of this phase (0..comm_sz-1) */
+                     double *local_x,    /* block from the input array x assigned to this node */
+                     int local_n,        /* length of local_x */
+                     double *received_x, /* block that will be received from the partner */
+                     double *buffer,     /* temporary buffer used for merging */
+                     int my_rank,        /* my rank */
+                     int even_partner,   /* partner to use during even phases */
+                     int odd_partner     /* parter to use during odd phases */
+                     )
 {
     /* If this is an even phase, my parther is even_partner; otherwise it is odd_partner */
     const int partner = (phase % 2 == 0 ? even_partner : odd_partner);
     int received_n = local_n;
 
-    if ( partner != MPI_PROC_NULL ) {
+    if (partner != MPI_PROC_NULL) {
         MPI_Status status;
 
         MPI_Sendrecv(local_x,           /* sendbuf      */
@@ -224,16 +223,16 @@ int do_sort_exchange( int phase,        /* number of this phase (0..comm_sz-1) *
                      );
         /* How many elements did we receive from the partner? */
         MPI_Get_count(&status, MPI_DOUBLE, &received_n);
-        if ( my_rank < partner ) {
-            merge_low( local_x, local_n, received_x, received_n, buffer );
+        if (my_rank < partner) {
+            merge_low(local_x, local_n, received_x, received_n, buffer);
         } else {
-            merge_high( local_x, local_n, received_x, received_n, buffer );
+            merge_high(local_x, local_n, received_x, received_n, buffer);
         }
     }
     return received_n;
 }
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
     double *x = NULL, *local_x, *received_x, *buffer;
     double tstart, tstop;
@@ -241,37 +240,36 @@ int main( int argc, char* argv[] )
         local_n,        /* length of local chunk (and of temporary buffer) */
         phase,          /* compare-exchange phase */
         odd_partner,    /* neighbor to use during odd phase */
-        even_partner    /* neighbor to use during even phase */
-        ;
+        even_partner;   /* neighbor to use during even phase */
     int my_rank, comm_sz;
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
 
-    if ( 2 == argc ) {
+    if (argc == 2) {
         n = atoi(argv[1]);
     }
 
-    if ( 0 == my_rank ) {
-        printf("Vector length: %d\n", n );
-        printf("Number of MPI processes: %d\n", comm_sz );
+    if (my_rank == 0) {
+        printf("Vector length: %d\n", n);
+        printf("Number of MPI processes: %d\n", comm_sz);
 
         /* The master initializes the vector to be sorted */
-        x = (double*)malloc( n * sizeof(*x) );
+        x = (double *) malloc(n * sizeof(*x));
         tstart = MPI_Wtime();
         fill(x, n);
         tstop = MPI_Wtime();
-        printf("Fill: %f\n", tstop - tstart );
+        printf("Fill: %.2f s\n", tstop - tstart);
     }
 
     /* Find partners */
     if (my_rank % 2 == 0) {
-        even_partner = (my_rank < comm_sz-1 ? my_rank + 1 : MPI_PROC_NULL );
-        odd_partner = (my_rank > 0 ? my_rank - 1 : MPI_PROC_NULL );
+        even_partner = (my_rank < comm_sz - 1 ? my_rank + 1 : MPI_PROC_NULL);
+        odd_partner = (my_rank > 0 ? my_rank - 1 : MPI_PROC_NULL);
     } else {
-        even_partner = (my_rank > 0 ? my_rank - 1 : MPI_PROC_NULL );
-        odd_partner = (my_rank < comm_sz-1 ? my_rank + 1 : MPI_PROC_NULL );
+        even_partner = (my_rank > 0 ? my_rank - 1 : MPI_PROC_NULL);
+        odd_partner = (my_rank < comm_sz - 1 ? my_rank + 1 : MPI_PROC_NULL);
     }
 
     /* Compute chunk size and displacements for use with
@@ -279,9 +277,9 @@ int main( int argc, char* argv[] )
        required by all processes, it is computed by everyone. */
     int sendcounts[comm_sz];
     int displs[comm_sz];
-    for (i=0; i<comm_sz; i++) {
-        const int start_idx = n*i/comm_sz;
-        const int end_idx = n*(i+1)/comm_sz;
+    for (i = 0; i < comm_sz; i++) {
+        const int start_idx = n * i / comm_sz;
+        const int end_idx = n * (i + 1) / comm_sz;
         sendcounts[i] = end_idx - start_idx;
         displs[i] = start_idx;
     }
@@ -290,74 +288,74 @@ int main( int argc, char* argv[] )
     local_n = sendcounts[my_rank];
 
     /* Local vectors allocated by all nodes */
-    local_x = (double*)malloc( buf_len * sizeof(*local_x) );
-    buffer = (double*)malloc( buf_len * sizeof(*buffer) );
-    received_x = (double*)malloc( buf_len * sizeof(*received_x) );
+    local_x = (double *) malloc(buf_len * sizeof(*local_x));
+    buffer = (double *) malloc(buf_len * sizeof(*buffer));
+    received_x = (double *) malloc(buf_len * sizeof(*received_x));
 
     /* The root starts the timer */
-    if ( 0 == my_rank ) {
+    if (my_rank == 0) {
         tstart = MPI_Wtime();
     }
 
     /* Scatter input data  */
-    MPI_Scatterv( x,             /* sendbuf */
-                  sendcounts,    /* sendcounts */
-                  displs,        /* displacements */
-                  MPI_DOUBLE,    /* sent MPI_Datatype */
-                  local_x,       /* recvbuf */
-                  local_n,       /* recvcount */
-                  MPI_DOUBLE,    /* received MPI_Datatype */
-                  0,             /* root */
-                  MPI_COMM_WORLD /* communicator */
-                  );
+    MPI_Scatterv(x,             /* sendbuf */
+                 sendcounts,    /* sendcounts */
+                 displs,        /* displacements */
+                 MPI_DOUBLE,    /* sent MPI_Datatype */
+                 local_x,       /* recvbuf */
+                 local_n,       /* recvcount */
+                 MPI_DOUBLE,    /* received MPI_Datatype */
+                 0,             /* root */
+                 MPI_COMM_WORLD /* communicator */
+                 );
 
     /* sort the local data */
-    qsort( local_x, local_n, sizeof(*local_x), compare );
+    qsort(local_x, local_n, sizeof(*local_x), compare);
 
     /* phases of odd-even sort */
-    for ( phase = 0; phase < comm_sz; phase++ ) {
-        local_n = do_sort_exchange( phase, local_x, local_n, received_x, buffer, my_rank, even_partner, odd_partner );
+    for (phase = 0; phase < comm_sz; phase++) {
+        local_n = do_sort_exchange(phase, local_x, local_n, received_x, buffer, my_rank, even_partner, odd_partner);
     }
 
     /* Gather local_n so that the master knows the new values of sendcounts[] */
-    MPI_Gather( &local_n,       /* sendbuf      */
-                1,              /* sendcount    */
-                MPI_INT,        /* datatype     */
-                sendcounts,     /* recvbuf      */
-                1,              /* recvcount    */
-                MPI_INT,        /* recvtype     */
-                0,              /* root         */
-                MPI_COMM_WORLD  /* communicator */
-                );
+    MPI_Gather(&local_n,       /* sendbuf      */
+               1,              /* sendcount    */
+               MPI_INT,        /* datatype     */
+               sendcounts,     /* recvbuf      */
+               1,              /* recvcount    */
+               MPI_INT,        /* recvtype     */
+               0,              /* root         */
+               MPI_COMM_WORLD  /* communicator */
+               );
 
     /* The master recomputes the displacements */
-    if ( 0 == my_rank ) {
+    if (my_rank == 0) {
         displs[0] = 0;
-        for (i=1; i<comm_sz; i++) {
+        for (i = 1; i < comm_sz; i++) {
             displs[i] = displs[i-1] + sendcounts[i-1];
         }
     }
 
     /* The master gathers the local buffers from all nodes */
-    MPI_Gatherv( local_x,       /* sendbuf */
-                 local_n,       /* sendcount */
-                 MPI_DOUBLE,    /* sendtype */
-                 x,             /* recvbuf */
-                 sendcounts,    /* recvcount (equal to sendcounts, in this case) */
-                 displs,        /* displacements */
-                 MPI_DOUBLE,    /* recvtype */
-                 0,             /* root (where to send) */
-                 MPI_COMM_WORLD /* communicator */
-                 );
+    MPI_Gatherv(local_x,       /* sendbuf */
+                local_n,       /* sendcount */
+                MPI_DOUBLE,    /* sendtype */
+                x,             /* recvbuf */
+                sendcounts,    /* recvcount (equal to sendcounts, in this case) */
+                displs,        /* displacements */
+                MPI_DOUBLE,    /* recvtype */
+                0,             /* root (where to send) */
+                MPI_COMM_WORLD /* communicator */
+                );
 
     /* The master checks the sorted vector */
-    if ( 0 == my_rank ) {
+    if (my_rank == 0) {
         tstop = MPI_Wtime();
-        printf("Sort: %f\n", tstop - tstart );
+        printf("Sort: %.2f s\n", tstop - tstart);
         tstart = MPI_Wtime();
         check(x, n);
         tstop = MPI_Wtime();
-        printf("Check: %f\n", tstop - tstart );
+        printf("Check: %.2f s\n", tstop - tstart);
     }
 
     free(x);
@@ -366,6 +364,5 @@ int main( int argc, char* argv[] )
     free(buffer);
 
     MPI_Finalize();
-
     return EXIT_SUCCESS;
 }

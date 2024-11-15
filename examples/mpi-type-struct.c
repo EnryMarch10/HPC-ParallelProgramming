@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     typedef struct {
         float x, y, z;
         float velocity;
-        int  n, type;
+        int n, type;
     } particle_t;
 
     particle_t   particles[NELEM];
@@ -73,8 +73,8 @@ int main(int argc, char *argv[])
     MPI_Type_commit(&particletype);
 
     /* task 0 initializes the particle array and then sends it to each task */
-    if (0 == my_rank) {
-        for (i=0; i<NELEM; i++) {
+    if (my_rank == 0) {
+        for (i = 0; i < NELEM; i++) {
             particles[i].x = i * 1.0;
             particles[i].y = i * -1.0;
             particles[i].z = i * 1.0;

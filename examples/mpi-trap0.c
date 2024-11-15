@@ -57,19 +57,19 @@
 /*
  * Function to be integrated
  */
-double f( double x )
+double f(double x)
 {
-    return 4.0/(1.0 + x*x);
+    return 4.0 / (1.0 + x * x);
 }
 
 /*
- * Compute the area of function f(x) for x=[a, b] using the trapezoid
+ * Compute the area of function f(x) for x=[a,b] using the trapezoid
  * rule. The integration interval [a,b] is partitioned into n
  * subintervals of equal size.
  */
-double trap( int my_rank, int comm_sz, double a, double b, int n )
+double trap(int my_rank, int comm_sz, double a, double b, int n)
 {
-    const double h = (b-a)/n;
+    const double h = (b - a) / n;
     const int local_n_start = n * my_rank / comm_sz;
     const int local_n_end = n * (my_rank + 1) / comm_sz;
     double x = a + local_n_start * h;
@@ -77,13 +77,13 @@ double trap( int my_rank, int comm_sz, double a, double b, int n )
     int i;
 
     for (i = local_n_start; i < local_n_end; i++) {
-        my_result += h*(f(x) + f(x+h))/2.0;
+        my_result += h * (f(x) + f(x + h)) / 2.0;
         x += h;
     }
     return my_result;
 }
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
     double a = 0.0, b = 1.0, partial_result, result = 0.0;
     int n = 1000000, p;
@@ -95,25 +95,25 @@ int main( int argc, char* argv[] )
 
     /* All nodes receive the command line parameters, therefore the
        master does not need to send them. */
-    if ( 4 == argc ) {
+    if (argc == 4) {
         a = atof(argv[1]);
         b = atof(argv[2]);
         n = atoi(argv[3]);
     }
 
     /* All nodes (incl. the master) compute their local result */
-    partial_result = trap( my_rank, comm_sz, a, b, n );
+    partial_result = trap(my_rank, comm_sz, a, b, n);
 
-    if ( 0 != my_rank ) {
+    if (my_rank != 0) {
         /* all participants (other than the master) send their local
            result to the master */
-        MPI_Send( &partial_result,      /* Buffer       */
-                  1,                    /* Size         */
-                  MPI_DOUBLE,           /* Type         */
-                  0,                    /* dest         */
-                  0,                    /* tag          */
-                  MPI_COMM_WORLD        /* Communicator */
-                  );
+        MPI_Send(&partial_result,      /* Buffer       */
+                 1,                    /* Size         */
+                 MPI_DOUBLE,           /* Type         */
+                 0,                    /* dest         */
+                 0,                    /* tag          */
+                 MPI_COMM_WORLD        /* Communicator */
+                 );
     } else {
         /* The master collects all partial results from other nodes.
            Beware of a potential deadlock: suppose that comm_sz is
@@ -125,21 +125,20 @@ int main( int argc, char* argv[] )
            computation deadlocks. A possible (easy) solution is to use
            MPI_ANY_SENDER on MPI_Recv. */
         result = partial_result;
-        for ( p=1; p<comm_sz; p++ ) {
-            MPI_Recv( &partial_result,  /* Buffer       */
-                      1,                /* Size         */
-                      MPI_DOUBLE,       /* Type         */
-                      p,                /* Sender (better use MPI_ANY_SENDER) */
-                      0,                /* Tag (can be MPI_ANY_TAG) */
-                      MPI_COMM_WORLD,   /* Communicator */
-                      MPI_STATUS_IGNORE /* Status       */
-                      );
+        for (p = 1; p < comm_sz; p++) {
+            MPI_Recv(&partial_result,  /* Buffer       */
+                     1,                /* Size         */
+                     MPI_DOUBLE,       /* Type         */
+                     p,                /* Sender (better use MPI_ANY_SOURCE) */
+                     0,                /* Tag (can be MPI_ANY_TAG) */
+                     MPI_COMM_WORLD,   /* Communicator */
+                     MPI_STATUS_IGNORE /* Status       */
+                     );
             result += partial_result;
         }
         printf("Area: %f\n", result);
     }
 
     MPI_Finalize();
-
     return EXIT_SUCCESS;
 }

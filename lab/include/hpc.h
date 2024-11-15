@@ -43,7 +43,7 @@
 /******************************************************************************
  * OpenMP timing routines
  ******************************************************************************/
-double hpc_gettime( void )
+double hpc_gettime(void)
 {
     return omp_get_wtime();
 }
@@ -52,7 +52,7 @@ double hpc_gettime( void )
 /******************************************************************************
  * MPI timing routines
  ******************************************************************************/
-double hpc_gettime( void )
+double hpc_gettime(void)
 {
     return MPI_Wtime();
 }
@@ -66,10 +66,10 @@ double hpc_gettime( void )
 #endif
 #include <time.h>
 
-double hpc_gettime( void )
+double hpc_gettime(void)
 {
     struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts );
+    clock_gettime(CLOCK_MONOTONIC, &ts);
     return ts.tv_sec + (double) ts.tv_nsec / 1e9;
 }
 #endif
@@ -81,36 +81,33 @@ double hpc_gettime( void )
 
 /* from https://gist.github.com/ashwin/2652488 */
 
-#define cudaSafeCall( err ) __cudaSafeCall( err, __FILE__, __LINE__ )
-#define cudaCheckError()    __cudaCheckError( __FILE__, __LINE__ )
+#define cudaSafeCall(err) __cudaSafeCall(err, __FILE__, __LINE__)
+#define cudaCheckError()    __cudaCheckError(__FILE__, __LINE__)
 
-inline void __cudaSafeCall( cudaError err, const char *file, const int line )
+inline void __cudaSafeCall(cudaError err, const char *file, const int line)
 {
 #ifndef NO_CUDA_CHECK_ERROR
-    if ( cudaSuccess != err ) {
-        fprintf( stderr, "cudaSafeCall() failed at %s:%i : %s\n",
-                 file, line, cudaGetErrorString( err ) );
+    if (cudaSuccess != err) {
+        fprintf(stderr, "cudaSafeCall() failed at %s:%i : %s\n", file, line, cudaGetErrorString(err));
         abort();
     }
 #endif
 }
 
-inline void __cudaCheckError( const char *file, const int line )
+inline void __cudaCheckError(const char *file, const int line)
 {
 #ifndef NO_CUDA_CHECK_ERROR
     cudaError err = cudaGetLastError();
-    if ( cudaSuccess != err ) {
-        fprintf( stderr, "cudaCheckError() failed at %s:%i : %s\n",
-                 file, line, cudaGetErrorString( err ) );
+    if (cudaSuccess != err) {
+        fprintf(stderr, "cudaCheckError() failed at %s:%i : %s\n", file, line, cudaGetErrorString(err));
         abort();
     }
 
     /* More careful checking. However, this will affect performance.
        Comment away if needed. */
     err = cudaDeviceSynchronize();
-    if( cudaSuccess != err ) {
-        fprintf( stderr, "cudaCheckError() with sync failed at %s:%i : %s\n",
-                 file, line, cudaGetErrorString( err ) );
+    if (cudaSuccess != err) {
+        fprintf(stderr, "cudaCheckError() with sync failed at %s:%i : %s\n", file, line, cudaGetErrorString(err));
         abort();
     }
 #endif

@@ -35,21 +35,21 @@
 #include <stdlib.h>
 #include <mpi.h>
 
-void big_computation( void )
+void big_computation(void)
 {
     printf("Some big computation...\n");
 }
 
-int main( int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int rank, size, buf;
     MPI_Status status;
     MPI_Request req;
     MPI_Init(&argc, &argv);
-    MPI_Comm_rank( MPI_COMM_WORLD, &rank );
-    MPI_Comm_size( MPI_COMM_WORLD, &size );
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    if ( size < 2 ) {
+    if (size < 2) {
         fprintf(stderr, "FATAL: you must run at least 2 processes\n");
         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
@@ -61,10 +61,9 @@ int main( int argc, char *argv[])
         big_computation();
         MPI_Wait(&req, &status);
         printf("Master terminates\n");
-    }
-    else if (rank == 1) {
+    } else if (rank == 1) {
         /* synchronous receive */
-        MPI_Recv( &buf, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &status );
+        MPI_Recv(&buf, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
         printf("Received %d\n", buf);
     }
 

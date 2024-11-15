@@ -36,26 +36,26 @@
 
 #define SIZE 16
 
-void print_array( float* v, int n )
+void print_array(float* v, int n)
 {
-  int i;
-  for (i=0; i<n; i++) {
-    printf("%3.1f ", v[i]);
-  }
-  printf("\n");
+    int i;
+    for (i = 0; i < n; i++) {
+        printf("%3.1f ", v[i]);
+    }
+    printf("\n");
 }
 
-void fill_array( float* v, float val, int n )
+void fill_array(float* v, float val, int n)
 {
-  int i;
-  for (i=0; i<n; i++) {
-    v[i] = val;
-  }
+    int i;
+    for (i = 0; i < n; i++) {
+        v[i] = val;
+    }
 }
 
 int main( int argc, char *argv[] )
 {
-  int numtasks, rank, source=0, tag=1, i;
+    int numtasks, rank, source=0, tag=1, i;
 
     float a[SIZE] =
         { 1.0,  2.0,  3.0,  4.0,
@@ -74,36 +74,35 @@ int main( int argc, char *argv[] )
     MPI_Comm_size(MPI_COMM_WORLD, &numtasks);
 
     /* create contiguous derived data type */
-    MPI_Type_indexed(3,
-		     array_of_blocklenghts,
-		     array_of_displacements,
-		     MPI_FLOAT,
-		     &idxtype
-		     );
+    MPI_Type_indexed(3,                      /* count */
+                     array_of_blocklenghts,  /* array_of_blocklenghts */
+                     array_of_displacements, /* array_of_displacements */
+                     MPI_FLOAT,              /* oldtype */
+                     &idxtype                /* newtype */
+                     );
     MPI_Type_commit(&idxtype);
 
-    if ( rank == 0 && numtasks == 1 ) {
+    if (rank == 0 && numtasks == 1) {
         fprintf(stderr, "FATAL: you must run at least 2 processes\n");
         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
 
     if (rank == 0) {
-      /* The master sends one element of idxtype to all other tasks */
-      for (i=1; i<numtasks; i++) {
-	MPI_Send(&a[0], 1, idxtype, 1, tag, MPI_COMM_WORLD);
-	MPI_Send(&a[0], 1, idxtype, 1, tag, MPI_COMM_WORLD);
-      }
-    } else
-      if (rank == 1) {
-	fill_array(b, -1, SIZE);
+        /* The master sends one element of idxtype to all other tasks */
+        for (i = 1; i < numtasks; i++) {
+            MPI_Send(&a[0], 1, idxtype, 1, tag, MPI_COMM_WORLD);
+            MPI_Send(&a[0], 1, idxtype, 1, tag, MPI_COMM_WORLD);
+        }
+    } else if (rank == 1) {
+        fill_array(b, -1, SIZE);
         MPI_Recv(b, 8, MPI_FLOAT, source, tag, MPI_COMM_WORLD, &stat);
-	printf("Rank %d received as MPI_FLOAT:\n", rank);
-	print_array(b, SIZE);
+        printf("Rank %d received as MPI_FLOAT:\n", rank);
+        print_array(b, SIZE);
 
-	fill_array(b, -1, SIZE);
+        fill_array(b, -1, SIZE);
         MPI_Recv(b, 1, idxtype, source, tag, MPI_COMM_WORLD, &stat);
-	printf("Rank %d received as idxtype:\n", rank);
-	print_array(b, SIZE);
+        printf("Rank %d received as idxtype:\n", rank);
+        print_array(b, SIZE);
     }
 
     /* free datatype when done using it */
