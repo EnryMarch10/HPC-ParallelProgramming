@@ -155,8 +155,9 @@ long sum7(const int* A, int n)
         }
         psum[my_id] = my_sum;
     } // implicit synchronization at end of parallel region
-    for (int i = 0; i < num_threads; i++)
+    for (int i = 0; i < num_threads; i++) {
         global_sum += psum[i];
+    }
     return global_sum;
 }
 
@@ -171,7 +172,7 @@ long sum8(const int* A, int n)
     return global_sum;
 }
 
-void test_func( const char *desc, long (* func)(const int*, int), const int *A, int n, long expect )
+void test_func(const char *desc, long (*func)(const int *, int), const int *A, int n, long expect)
 {
     printf("*** %s\n", desc);
     const long result = func(A, n);
@@ -191,12 +192,13 @@ int main(int argc, char *argv[])
         len = atoi(argv[1]);
     }
 
-    int *A = (int*)malloc(len * sizeof(*A));
+    int *A = (int*) malloc(len * sizeof(*A));
     assert(A != NULL);
 
-    srand((unsigned int)time(NULL));
-    for (int i = 0; i < len; i++)
-    	A[i] = rand()%2;
+    srand((unsigned int) time(NULL));
+    for (int i = 0; i < len; i++) {
+        A[i] = rand() % 2;
+    }
 
     const long sequential_sum = sum1(A, len);
 

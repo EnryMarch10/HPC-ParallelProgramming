@@ -53,9 +53,9 @@
 /*
  * Function to be integrated
  */
-double f( double x )
+double f(double x)
 {
-    return 4.0/(1.0 + x*x);
+    return 4.0 / (1.0 + x * x);
 }
 
 /*
@@ -63,7 +63,7 @@ double f( double x )
  * rule. The integration interval [a,b] is partitioned into n
  * subintervals of equal size.
  */
-double trap( double a, double b, long n )
+double trap(double a, double b, long n)
 {
     /*
      * This code is a direct implementation of the trapezoid rule.
@@ -72,17 +72,17 @@ double trap( double a, double b, long n )
      * variable |result|.
      */
     double result = 0.0;
-    const double h = (b-a)/n;
+    const double h = (b - a) / n;
     double x = a;
-    for ( long i = 0; i<n; i++ ) {
-	result += h*(f(x) + f(x+h))/2.0;
-	x += h;
+    for (long i = 0; i < n; i++) {
+        result += h * (f(x) + f(x + h)) / 2.0;
+        x += h;
     }
     return result;
 }
 
 /* Version 0: no pragma omp for, manual reduction */
-double trap0( double a, double b, long n )
+double trap0(double a, double b, long n)
 {
     const int thread_count = omp_get_max_threads(); /* <= Note: omp_get_MAX_threads() */
     double partial_result[thread_count];
@@ -91,13 +91,13 @@ double trap0( double a, double b, long n )
         const int my_rank = omp_get_thread_num();
         const int thread_count = omp_get_num_threads();
         const double h = (b-a)/n;
-        const long local_n_start = ((long)n * my_rank) / thread_count;
-        const long local_n_end = ((long)n * (my_rank+1)) / thread_count;
+        const long local_n_start = ((long) n * my_rank) / thread_count;
+        const long local_n_end = ((long) n * (my_rank + 1)) / thread_count;
         double x = a + local_n_start * h;
         double local_result = 0.0;
 
-        for ( long i = local_n_start; i<local_n_end; i++ ) {
-            local_result += h*(f(x) + f(x+h))/2.0;
+        for (long i = local_n_start; i < local_n_end; i++) {
+            local_result += h * (f(x) + f(x + h)) / 2.0;
             x += h;
         }
         partial_result[my_rank] = local_result;
@@ -105,28 +105,28 @@ double trap0( double a, double b, long n )
     /* Implicit barrier here */
     /* Only one thread (the master) computes the sum of partial results */
     double result = 0.0;
-    for (int i=0; i<thread_count; i++) {
+    for (int i = 0; i < thread_count; i++) {
         result += partial_result[i];
     }
     return result;
 }
 
 /* Version 1: no pragma omp for, reduction using atomic construct. */
-double trap1( double a, double b, long n )
+double trap1(double a, double b, long n)
 {
     double result = 0.0;
 #pragma omp parallel default(none) shared(result, a, b, n)
     {
         const int my_rank = omp_get_thread_num();
         const int thread_count = omp_get_num_threads();
-        const double h = (b-a)/n;
-        const long local_n_start = ((long)n * my_rank) / thread_count;
-        const long local_n_end = ((long)n * (my_rank+1)) / thread_count;
+        const double h = (b - a) / n;
+        const long local_n_start = ((long) n * my_rank) / thread_count;
+        const long local_n_end = ((long) n * (my_rank + 1)) / thread_count;
         double x = a + local_n_start * h;
         double partial_result = 0.0;
 
-        for ( long i = local_n_start; i<local_n_end; i++ ) {
-            partial_result += h*(f(x) + f(x+h))/2.0;
+        for (long i = local_n_start; i < local_n_end; i++) {
+            partial_result += h * (f(x) + f(x + h)) / 2.0;
             x += h;
         }
 #pragma omp atomic
@@ -137,20 +137,20 @@ double trap1( double a, double b, long n )
 }
 
 /* Version 2: no pragma omp for, "proper" reduction. */
-double trap2( double a, double b, long n )
+double trap2(double a, double b, long n)
 {
     double result = 0.0;
 #pragma omp parallel default(none) shared(a, b, n) reduction(+:result)
     {
         const int my_rank = omp_get_thread_num();
         const int thread_count = omp_get_num_threads();
-        const double h = (b-a)/n;
-        const long local_n_start = ((long)n * my_rank) / thread_count;
-        const long local_n_end = ((long)n * (my_rank+1)) / thread_count;
+        const double h = (b - a) / n;
+        const long local_n_start = ((long) n * my_rank) / thread_count;
+        const long local_n_end = ((long) n * (my_rank + 1)) / thread_count;
         double x = a + local_n_start * h;
 
-        for ( long i = local_n_start; i<local_n_end; i++ ) {
-            result += h*(f(x) + f(x+h))/2.0;
+        for (long i = local_n_start; i < local_n_end; i++) {
+            result += h * (f(x) + f(x + h)) / 2.0;
             x += h;
         }
     }
@@ -159,13 +159,13 @@ double trap2( double a, double b, long n )
 }
 
 /* Version 3: pragma omp for with reduction. */
-double trap3( double a, double b, long n )
+double trap3(double a, double b, long n)
 {
     double result = 0.0;
-    const double h = (b-a)/n;
+    const double h = (b - a) / n;
 #pragma omp parallel for default(none) shared(a, b, n, h) reduction(+:result)
-    for ( long i = 0; i<n; i++ ) {
-	result += h*(f(a+i*h) + f(a+(i+1)*h))/2;
+    for (long i = 0; i < n; i++) {
+        result += h * (f(a + i * h) + f(a + (i + 1) * h)) / 2;
     }
     return result;
 }
@@ -181,15 +181,15 @@ void test(trap_fun_t f, const char *desc, double a, double b, long n)
     printf("\tArea: %f\n\tElapsed time (s): %f\n\n", result, elapsed);
 }
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
     long n = 1000000;
     double a = 0.0, b = 1.0;
 
-    if ( 4 == argc ) {
-	a = atof(argv[1]);
-	b = atof(argv[2]);
-	n = atol(argv[3]);
+    if (argc == 4) {
+        a = atof(argv[1]);
+        b = atof(argv[2]);
+        n = atol(argv[3]);
     }
 
     test(trap, "Sequential", a, b, n);

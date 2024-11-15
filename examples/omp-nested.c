@@ -27,6 +27,7 @@
  *      OMP_NESTED=true ./omp-nested
  *
  ****************************************************************************/
+
 #include <stdio.h>
 #include <omp.h>
 
@@ -36,7 +37,7 @@ void greet(int level, int parent)
            level, parent, omp_get_thread_num(), omp_get_num_threads());
 }
 
-int main( void )
+int main(void)
 {
     omp_set_num_threads(4);
 #pragma omp parallel

@@ -27,10 +27,11 @@
  *      OMP_NUM_THREADS=8 ./omp-demo1
  *
  ****************************************************************************/
+
 #include <stdio.h>
 #include <omp.h>
 
-void say_hello( void )
+void say_hello(void)
 {
     int my_rank = omp_get_thread_num();
     int thread_count = omp_get_num_threads();

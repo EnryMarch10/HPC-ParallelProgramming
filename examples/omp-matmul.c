@@ -35,34 +35,34 @@
 #include <stdlib.h>
 
 /* Fills n x n square matrix m with random values */
-void fill( float* m, int n )
+void fill(float *m, int n)
 {
     int i, j;
-    for (i=0; i<n; i++) {
-        for (j=0; j<n; j++) {
-            m[i*n + j] = rand() / (double)RAND_MAX; /* casted to float */
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < n; j++) {
+            m[i * n + j] = rand() / (double) RAND_MAX; /* casted to float */
         }
     }
 }
 
 int min(int a, int b)
 {
-    return (a < b ? a : b);
+    return a < b ? a : b;
 }
 
 /* compute r = p * q, where p, q, r are n x n matrices. The caller is
    responsible for allocating the memory for r */
-void matmul( float *p, float* q, float *r, int n)
+void matmul(float *p, float* q, float *r, int n)
 {
     int i, j, k;
 #pragma omp parallel for collapse(2) private(k)
-    for (i=0; i<n; i++) {
-        for (j=0; j<n; j++) {
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < n; j++) {
             float s = 0.0;
-            for (k=0; k<n; k++) {
-                s += p[i*n + k] * q[k*n + j];
+            for (k = 0; k < n; k++) {
+                s += p[i * n + k] * q[k * n + j];
             }
-            r[i*n + j] = s;
+            r[i * n + j] = s;
         }
     }
 }
@@ -71,30 +71,30 @@ void matmul( float *p, float* q, float *r, int n)
   matrices. The caller is responsible for allocating the memory for
   r. This function allocates (and the frees) an additional n x n
   temporary matrix. */
-void matmul_transpose( float *p, float* q, float *r, int n)
+void matmul_transpose(float *p, float* q, float *r, int n)
 {
     int i, j, k;
-    float *qT = (float*)malloc( n * n * sizeof(float) );
+    float *qT = (float*) malloc(n * n * sizeof(float));
 
     /* transpose q, storing the result in qT */
 #pragma omp parallel
     {
 #pragma omp for collapse(2)
-        for (i=0; i<n; i++) {
-            for (j=0; j<n; j++) {
-                qT[j*n + i] = q[i*n + j];
+        for (i = 0; i < n; i++) {
+            for (j = 0; j < n; j++) {
+                qT[j * n + i] = q[i * n + j];
             }
         }
 
         /* multiply p and qT row-wise */
 #pragma omp for collapse(2) private(k)
-        for (i=0; i<n; i++) {
-            for (j=0; j<n; j++) {
+        for (i = 0; i < n; i++) {
+            for (j = 0; j < n; j++) {
                 float s = 0.0;
-                for (k=0; k<n; k++) {
-                    s += p[i*n + k] * qT[j*n + k];
+                for (k = 0; k < n; k++) {
+                    s += p[i * n + k] * qT[j * n + k];
                 }
-                r[i*n + j] = s;
+                r[i * n + j] = s;
             }
         }
     }
@@ -102,24 +102,24 @@ void matmul_transpose( float *p, float* q, float *r, int n)
     free(qT);
 }
 
-int main( int argc, char *argv[] )
+int main(int argc, char *argv[])
 {
     int n = 512;
     float *p, *q, *r;
     double tstart, tstop;
 
-    if ( argc > 2 ) {
+    if (argc > 2) {
         printf("Usage: %s [n]\n", argv[0]);
         return EXIT_FAILURE;
     }
 
-    if ( argc == 2 ) {
+    if (argc == 2) {
         n = atoi(argv[1]);
     }
 
-    p = (float*)malloc( n * n * sizeof(float) );
-    q = (float*)malloc( n * n * sizeof(float) );
-    r = (float*)malloc( n * n * sizeof(float) );
+    p = (float*) malloc(n * n * sizeof(float));
+    q = (float*) malloc(n * n * sizeof(float));
+    r = (float*) malloc(n * n * sizeof(float));
 
     fill(p, n);
     fill(q, n);

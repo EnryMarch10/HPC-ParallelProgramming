@@ -27,9 +27,10 @@
  *      OMP_NUM_THREADS=8 ./omp-demo0
  *
  ****************************************************************************/
+
 #include <stdio.h>
 
-int main( void )
+int main(void)
 {
 #pragma omp parallel
     {

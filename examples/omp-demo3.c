@@ -27,18 +27,19 @@
  *      ./omp-demo3
  *
  ****************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
 
-void say_hello( void )
+void say_hello(void)
 {
     int my_rank = omp_get_thread_num();
     int thread_count = omp_get_num_threads();
     printf("Hello from thread %d of %d\n", my_rank, thread_count);
 }
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
     /* Request 4 threads, no matter what */
     omp_set_num_threads(4);

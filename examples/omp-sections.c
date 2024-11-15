@@ -27,7 +27,9 @@
  *      OMP_NUM_THREADS=4 ./omp_sections
  *
  *****************************************************************************/
+
 #include <stdio.h>
+
 #define N 1000
 
 int main(void)
@@ -35,25 +37,27 @@ int main(void)
     int i;
     float a[N], b[N], c[N], d[N];
     /* Some initializations */
-    for (i=0; i < N; i++) {
-	a[i] = i * 1.5;
-	b[i] = i + 22.35;
+    for (i = 0; i < N; i++) {
+        a[i] = i * 1.5;
+        b[i] = i + 22.35;
     }
-#pragma omp parallel shared(a,b,c,d) private(i)
+#pragma omp parallel shared(a, b, c, d) private(i)
     {
 #pragma omp sections nowait
-	{
+        {
 #pragma omp section
-	    for (i=0; i < N; i++)
-		c[i] = a[i] + b[i];
+            for (i = 0; i < N; i++) {
+                c[i] = a[i] + b[i];
+            }
 #pragma omp section
-	    for (i=0; i < N; i++)
-		d[i] = a[i] * b[i];
-	}  /* end of sections (no barrier here) */
+            for (i = 0; i < N; i++) {
+                d[i] = a[i] * b[i];
+            }
+        }  /* end of sections (no barrier here) */
     }  /* end of parallel section (barrier here) */
 
-    for ( i=0; i<N; i++) {
-	printf("%f %f %f %f\n", a[i], b[i], c[i], d[i]);
+    for (i = 0; i < N; i++) {
+        printf("%f %f %f %f\n", a[i], b[i], c[i], d[i]);
     }
 
     return 0;

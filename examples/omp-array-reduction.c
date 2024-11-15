@@ -32,7 +32,7 @@
 
 #include <stdio.h>
 
-int main( void )
+int main(void)
 {
     int m[][4] = {{ 1,  2,  3,  4},
                   { 5,  6,  7,  8},
@@ -41,12 +41,12 @@ int main( void )
     int row_sum[4] = {0};
 
 #pragma omp parallel for reduction(+:row_sum[:4])
-    for (int i=0; i<4; i++) {
-        for (int j=0; j<4; j++) {
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
             row_sum[i] += m[i][j];
         }
     }
-    for (int i=0; i<4; i++) {
+    for (int i = 0; i < 4; i++) {
         printf("%d ", row_sum[i]);
     }
     printf("\n");

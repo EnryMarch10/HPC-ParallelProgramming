@@ -77,7 +77,7 @@ const pixel_t colors[] = {
     {204, 128, 0},
     {153, 87, 0},
     {106, 52, 3} };
-const int NCOLORS = sizeof(colors)/sizeof(colors[0]);
+const int NCOLORS = sizeof(colors) / sizeof(colors[0]);
 
 /**
  * Iterate the recurrence:
@@ -87,13 +87,13 @@ const int NCOLORS = sizeof(colors)/sizeof(colors[0]);
  *
  * Returns the first n such that ||z_n|| > 2, or |MAXIT|
  */
-int iterate( float cx, float cy )
+int iterate(float cx, float cy)
 {
     float x = 0.0f, y = 0.0f, xnew, ynew;
     int it;
-    for ( it = 0; (it < MAXIT) && (x*x + y*y <= 2.0*2.0); it++ ) {
-        xnew = x*x - y*y + cx;
-        ynew = 2.0*x*y + cy;
+    for (it = 0; (it < MAXIT) && (x * x + y * y <= 2.0 * 2.0); it++) {
+        xnew = x * x - y * y + cx;
+        ynew = 2.0 * x * y + cy;
         x = xnew;
         y = ynew;
     }
@@ -105,31 +105,31 @@ int iterate( float cx, float cy )
  * color, depending on the number of iterations it; (0,0) is the upper
  * left corner of the window, y grows downward.
  */
-void drawpixel( int x, int y, int it )
+void drawpixel(int x, int y, int it)
 {
     if (it < MAXIT) {
-        gfx_color( colors[it % NCOLORS].r,
-                   colors[it % NCOLORS].g,
-                   colors[it % NCOLORS].b );
+        gfx_color(colors[it % NCOLORS].r,
+                  colors[it % NCOLORS].g,
+                  colors[it % NCOLORS].b );
     } else {
-        gfx_color( 0, 0, 0 );
+        gfx_color(0, 0, 0);
     }
-    gfx_point( x, y );
+    gfx_point(x, y);
 }
 
-int main( int argc, char *argv[] )
+int main(int argc, char *argv[])
 {
     gfx_open(XSIZE, YSIZE, "Mandelbrot Set");
     const double tstart = omp_get_wtime();
-#pragma omp parallel for schedule(runtime) default(none) shared(XSIZE,YSIZE,XMIN,XMAX,YMIN,YMAX)
-    for ( int y = 0; y < YSIZE; y++ ) {
-	for ( int x = 0; x < XSIZE; x++ ) {
-            const double re = XMIN + (XMAX - XMIN) * (float)(x) / (XSIZE - 1);
-            const double im = YMAX - (YMAX - YMIN) * (float)(y) / (YSIZE - 1);
+#pragma omp parallel for schedule(runtime) default(none) shared(XSIZE, YSIZE, XMIN, XMAX, YMIN, YMAX)
+    for (int y = 0; y < YSIZE; y++) {
+        for (int x = 0; x < XSIZE; x++) {
+            const double re = XMIN + (XMAX - XMIN) * (float) (x) / (XSIZE - 1);
+            const double im = YMAX - (YMAX - YMIN) * (float) (y) / (YSIZE - 1);
             const int v = iterate(re, im);
 #pragma omp critical
-	    drawpixel( x, y, v);
-	}
+            drawpixel( x, y, v);
+        }
     }
     const double elapsed = omp_get_wtime() - tstart;
     printf("Elapsed time %.2f\n", elapsed);

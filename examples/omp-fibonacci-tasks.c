@@ -27,6 +27,7 @@
  *      OMP_NUM_THREADS=4 ./omp-fibonacci-tasks 10
  *
  ****************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
@@ -34,26 +35,26 @@
 /* Compute the n-th Fibonacci number using OpenMP tasks.  This
    algorithm is based on the inefficient recursive version that
    performs O(2^n) calls. */
-int fib( int n )
+int fib(int n)
 {
     int n1, n2;
     if (n < 2) {
         return 1;
     } else {
 #pragma omp task shared(n1)
-        n1 = fib(n-1);
+        n1 = fib(n - 1);
 #pragma omp task shared(n2)
-        n2 = fib(n-2);
+        n2 = fib(n - 2);
         /* Wait for the two tasks above to complete */
 #pragma omp taskwait
         return n1 + n2;
     }
 }
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
     int n = 10, res;
-    if ( argc == 2 ) {
+    if (argc == 2) {
         n = atoi(argv[1]);
     }
     /* Create a team. */

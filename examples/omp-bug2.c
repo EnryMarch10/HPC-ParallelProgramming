@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <omp.h>
 
-int main( void )
+int main(void)
 {
     const int foo = 1;
 #pragma omp parallel default(none) shared(foo)

@@ -27,6 +27,7 @@
  *      OMP_NUM_THREADS=4 ./omp-linked-list-traversal
  *
  *****************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -39,7 +40,7 @@ typedef struct ListNode {
 
 /* Recursively create a list with nodes numbered n, n+1, ... m; if
    n>m, returns the empry list. */
-ListNode *list_create( int n, int m )
+ListNode *list_create(int n, int m)
 {
     if (n > m) {
         return NULL;
@@ -52,7 +53,7 @@ ListNode *list_create( int n, int m )
 }
 
 /* Recursively destroy the list pointed to by `l` */
-void list_destroy( ListNode *l )
+void list_destroy(ListNode *l)
 {
     if (l) {
         list_destroy(l->next);
@@ -62,31 +63,32 @@ void list_destroy( ListNode *l )
 
 int fib(int n)
 {
-    if (n<=0)
+    if (n <= 0) {
         return 1;
-    else
-        return fib(n-1) + fib(n-2);
+    } else {
+        return fib(n - 1) + fib(n - 2);
+    }
 }
 
-void process( ListNode *l )
+void process(ListNode *l)
 {
     assert(l);
     printf("%d -> %d\n", l->val, fib(l->val));
 }
 
-void list_traverse( ListNode *head )
+void list_traverse(ListNode *head)
 {
 #pragma omp parallel
     {
 #pragma omp single
-	{
+        {
             ListNode *p = head;
             while (p) {
 #pragma omp task
                 process(p);
                 p = p->next;
             }
-	}
+        }
     }
 }
 
@@ -97,7 +99,7 @@ int main(int argc, char *argv[])
     if (argc > 1)
         n = atoi(argv[1]);
 
-    ListNode *l = list_create(0, n-1);
+    ListNode *l = list_create(0, n - 1);
     list_traverse(l);
     list_destroy(l);
     return EXIT_SUCCESS;

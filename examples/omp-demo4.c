@@ -27,10 +27,11 @@
  *      ./omp-demo4
  *
  ****************************************************************************/
+
 #include <stdio.h>
 #include <omp.h>
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
     printf("Before parallel region: threads=%d, max_threads=%d\n",
            omp_get_num_threads(), omp_get_max_threads());

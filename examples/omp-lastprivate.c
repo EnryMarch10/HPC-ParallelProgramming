@@ -27,9 +27,10 @@
  *      OMP_NUM_THREADS=4 ./omp-lastprivate
  *
  ****************************************************************************/
+
 #include <stdio.h>
 
-int main( void )
+int main(void)
 {
     int tmp = 0, i;
 #pragma omp parallel for firstprivate(tmp) lastprivate(tmp)

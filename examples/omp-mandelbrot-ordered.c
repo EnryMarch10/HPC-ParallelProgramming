@@ -53,20 +53,20 @@ const double YMIN = -1.0, YMAX = 1.0;
  * Returns the first n such that z_n > |bound|, or |MAXIT| if z_n is below
  * |bound| after |MAXIT| iterations.
  */
-int iterate( float cx, float cy )
+int iterate(float cx, float cy)
 {
     int it;
     float x = 0.0, y = 0.0, xnew, ynew;
     for ( it = 0; (it < MAXIT) && (x*x + y*y < 2*2); it++ ) {
-        xnew = x*x - y*y + cx;
-        ynew = 2.0f*x*y + cy;
+        xnew = x * x - y * y + cx;
+        ynew = 2.0f * x * y + cy;
         x = xnew;
         y = ynew;
     }
     return it;
 }
 
-int main( int argc, char *argv[] )
+int main(int argc, char *argv[])
 {
     float tstart, elapsed;
     const char charset[] = ".,c8M@jawrpogOQEPGJ";
@@ -75,8 +75,8 @@ int main( int argc, char *argv[] )
     /* x, y are private by default, being used in "for" statements
        that are both parallelized by the collapse(2) directive */
 #pragma omp parallel for default(none) collapse(2) shared(XSIZE,YSIZE,XMIN,XMAX,YMIN,YMAX,charset,MAXIT) ordered
-    for ( int y = 0; y < YSIZE; y++ ) {
-        for ( int x = 0; x < XSIZE; x++ ) {
+    for (int y = 0; y < YSIZE; y++) {
+        for (int x = 0; x < XSIZE; x++) {
             const double cx = XMIN + (XMAX - XMIN) * (float)(x) / (XSIZE - 1);
             const double cy = YMAX - (YMAX - YMIN) * (float)(y) / (YSIZE - 1);
             const int v = iterate(cx, cy);
@@ -84,10 +84,12 @@ int main( int argc, char *argv[] )
             {
                 char c = ' ';
                 if (v < MAXIT) {
-                    c = charset[v % (sizeof(charset)-1)];
+                    c = charset[v % (sizeof(charset) - 1)];
                 }
                 putchar(c);
-                if (x+1 == XSIZE) puts("|");
+                if (x + 1 == XSIZE) {
+                    puts("|");
+                }
             }
         }
     }
