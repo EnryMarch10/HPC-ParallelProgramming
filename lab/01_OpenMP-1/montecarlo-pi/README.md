@@ -1,12 +1,12 @@
 # Monte Carlo approximation of $\pi$
 
-The file [omp-pi.c](https://www.moreno.marzolla.name/teaching/HPC/handouts/omp-pi.c) implements a serial *Monte Carlo* algorithm
+The file [omp-pi.c](base/omp-pi.c) implements a serial *Monte Carlo* algorithm
 for computing the approximate value of $\pi$. Monte Carlo algorithms use pseudo-random numbers to evaluate some function of
 interest.
 
-![Monte Carlo](img/pi_Monte_Carlo.svg)
+![Figure 1: Monte Carlo computation of the value of $\pi$](img/pi_Monte_Carlo.svg)
 
-*Monte Carlo computation of the value of $\pi$.*
+*Figure 1: Monte Carlo computation of the value of $\pi$.*
 
 The idea is simple (see the figure). We generate $N$ random points uniformly distributed over a square with corners at $(-1, -1)$
 and $(1, 1)$, and count the number of points falling inside the circle with center $(0, 0)$ and unitary radius.
@@ -84,4 +84,4 @@ OMP_NUM_THREADS=4 ./omp-pi 20000
 
 ## Files
 
-- [omp-pi.c](https://www.moreno.marzolla.name/teaching/HPC/handouts/omp-pi.c)
+- [omp-pi.c](base/omp-pi.c)

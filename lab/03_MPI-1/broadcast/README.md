@@ -19,8 +19,8 @@ MPI_Bcast(v,             /* buffer   */
           );
 ```
 
-Note. `MPI_Bcast()` must always be preferred to any home-made solution.
-The purpose of this exercise is to learn how `MPI_Bcast()` **might** be implemented.
+> **Note.** `MPI_Bcast()` must always be preferred to any home-made solution.
+> The purpose of this exercise is to learn how `MPI_Bcast()` **might** be implemented.
 
 To implement `my_Bcast()`, each process determines its own rank $p$ and the number $P$ of MPI processes.
 Then, process 0:
@@ -36,12 +36,11 @@ For example, with $P = 15$ you get the communication pattern shown in *Figure 1*
 arrows indicate point-to-point communications, numbers indicate the rank of processes.
 The procedure above should work correctly for any $P$.
 
-![Figure 1](img/mpi-my-bcast.svg)
+![Figure 1: Broadcast tree with $P = 15$ processes](img/mpi-my-bcast.svg)
 
-*Figure 1: Broadcast tree with P = 15 processes*
+*Figure 1: Broadcast tree with $P = 15$ processes*
 
-The file [mpi-my-bcast.c](https://www.moreno.marzolla.name/teaching/HPC/handouts/mpi-my-bcast.c) contains the skeleton of the
-`my_Bcast()` function.
+The file [mpi-my-bcast.c](base/mpi-my-bcast.c) contains the skeleton of the `my_Bcast()` function.
 Complete the implementation using point-to-point send/receive operations.
 
 To compile:
@@ -58,4 +57,4 @@ mpirun -n 4 ./mpi-my-bcast
 
 ## Files
 
-- [mpi-my-bcast.c](https://www.moreno.marzolla.name/teaching/HPC/handouts/mpi-my-bcast.c)
+- [mpi-my-bcast.c](base/mpi-my-bcast.c)

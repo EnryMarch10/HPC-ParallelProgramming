@@ -1,6 +1,6 @@
 # Dot product
 
-The file [omp-dot.c](https://www.moreno.marzolla.name/teaching/HPC/handouts/omp-dot.c) contains a serial program that computes the
+The file [omp-dot.c](base/omp-dot.c) contains a serial program that computes the
 dot product of two arrays $v1[]$ and $v2[]$. The program receives the array lengths $n$ as the only parameter on the command line.
 The arrays are initialized deterministically, so that their scalar product is known without computing it explicitly.
 The dot product of $v1[]$ and $v2[]$ is defined as:
@@ -44,4 +44,4 @@ OMP_NUM_THREADS=2 ./omp-dot 1000000
 
 ## File
 
-- [omp-dot.c](https://www.moreno.marzolla.name/teaching/HPC/handouts/omp-dot.c)
+- [omp-dot.c](base/omp-dot.c)

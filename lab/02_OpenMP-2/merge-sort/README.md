@@ -1,6 +1,6 @@
 # Merge Sort with OpenMP tasks
 
-The file [omp-merge-sort.c](https://www.moreno.marzolla.name/teaching/HPC/handouts/omp-merge-sort.c) contains a recursive
+The file [omp-merge-sort.c](base/omp-merge-sort.c) contains a recursive
 implementation of the *Merge Sort* algorithm.
 The program uses *Selection Sort* when the size of the sub-vector is less than a user-defined cutoff value;
 this is a standard optimization that avoids the overhead of recursive calls on small vectors.
@@ -31,4 +31,4 @@ To execute:
 
 ## Files
 
-- [omp-merge-sort.c](https://www.moreno.marzolla.name/teaching/HPC/handouts/omp-merge-sort.c)
+- [omp-merge-sort.c](base/omp-merge-sort.c)

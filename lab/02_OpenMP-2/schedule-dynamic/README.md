@@ -3,7 +3,7 @@
 OpenMP allows the use of the `schedule(static)` and `schedule(dynamic)` clauses to choose how to assign loop iterations to OpenMP
 threads. The purpose of this exercise is to simulate these clauses using the `omp parallel` construct only.
 
-The file [omp-schedule.c](https://www.moreno.marzolla.name/teaching/HPC/handouts/omp-schedule.c) contains a serial program that
+The file [omp-schedule.c](base/omp-schedule.c) contains a serial program that
 creates two arrays `vin[]` and `vout[]` of length $n$ such that `vout[i] = Fib(vin[i])` for each $i$, where `Fib(k)` the k-th
 number of the Fibonacci sequence.
 `Fib(k)` is intentionally computed using the inefficient recursive algorithm, so that the computation time varies widely depending
@@ -40,4 +40,4 @@ OMP_NUM_THREADS=2 ./omp-schedule
 
 ## Files
 
-- [omp-schedule.c](https://www.moreno.marzolla.name/teaching/HPC/handouts/omp-schedule.c)
+- [omp-schedule.c](base/omp-schedule.c)

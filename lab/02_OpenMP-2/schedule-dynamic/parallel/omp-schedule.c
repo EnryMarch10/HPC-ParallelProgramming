@@ -1,73 +1,3 @@
-/****************************************************************************
- *
- * omp-schedule.c - simulate "schedule()" directives
- *
- * Copyright (C) 2017--2023 by Moreno Marzolla <https://www.moreno.marzolla.name/>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- ****************************************************************************/
-
-/***
-% HPC - Simulate "schedule()" directives
-% [Moreno Marzolla](https://www.moreno.marzolla.name/)
-% Last updated: 2023-10-23
-
-OpenMP allows the use of the `schedule(static)` and
-`schedule(dynamic)` clauses to assign loop iterations to OpenMP
-threads. The purpose of this exercise is to simulate these clauses
-_without_ using the `omp parallel for` construct.
-
-The file [omp-schedule.c](omp-schedule.c) contains a serial program
-that creates two arrays `vin[]` and `vout[]` of length $n$ such that
-`vout[i] = Fib(vin[i])` for each $i$, where `Fib(k)` the _k_-th number
-of the Fibonacci sequence. `Fib(k)` is intentionally computed using
-the inefficient recursive algorithm, so that the computation time
-varies widely depending on $k$.
-
-There are two functions, `do_static()` and `do_dynamic()` that perform
-the computation above.
-
-1. Modify `do_static()` to distribute the loop iterations as would be
-   done by the `schedule(static, chunk_size)` clause, but without
-   using a `omp parallel for` directive (you may use `omp parallel`).
-
-2. Modify `do_dynamic()` to distribute the loop iterations according
-   to the _master-worker_ paradigm, as would be done by the
-   `schedule(dynamic, chunk_size)` clause. Again, you are not allowed
-   to use `omp parallel for`, but only `omp parallel`.
-
-See the source code for suggestions.
-
-To compile:
-
-        gcc -std=c99 -Wall -Wpedantic -fopenmp omp-schedule.c -o omp-schedule
-
-To execute:
-
-        ./omp-schedule [n]
-
-Example:
-
-        OMP_NUM_THREADS=2 ./omp-schedule
-
-## Files
-
-- [omp-schedule.c](omp-schedule.c)
-
-***/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -252,9 +182,9 @@ int main(int argc, char* argv[])
     }
 
     /* initialize the input and output arrays */
-    vin = (int*) malloc(n * sizeof(vin[0]));
+    vin = (int *) malloc(n * sizeof(vin[0]));
     assert(vin != NULL);
-    vout = (int*) malloc(n * sizeof(vout[0]));
+    vout = (int *) malloc(n * sizeof(vout[0]));
     assert(vout != NULL);
 
     /**

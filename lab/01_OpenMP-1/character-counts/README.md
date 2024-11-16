@@ -1,11 +1,11 @@
 # Character counts
 
-![Letters](img/letters.jpg)
+![Figure 1: Letters](img/letters.jpg)
 
-*By Willi Heidelbach, CC BY 2.5,
+*Figure 1: By Willi Heidelbach, CC BY 2.5,
 [https://commons.wikimedia.org/w/index.php?curid=1181525](https://commons.wikimedia.org/w/index.php?curid=1181525).*
 
-The file [omp-letters.c](https://www.moreno.marzolla.name/teaching/HPC/handouts/omp-letters.c) contains a serial program that
+The file [omp-letters.c](base/omp-letters.c) contains a serial program that
 computes the number of occurrences of the letters ‘a’…‘z’ in an ASCII file read from standard input.
 No distinction is made between upper and lowercase characters; non-letter characters are ignored.
 We provide some text documents to experiment with, courtesy of the [Project Gutenberg](https://www.gutenberg.org/).
@@ -71,9 +71,9 @@ Run with:
 
 ## Files
 
-- [omp-letters.c](https://www.moreno.marzolla.name/teaching/HPC/handouts/omp-letters.c)
+- [omp-letters.c](base/omp-letters.c)
 - Some sample texts (see [Project Gutenberg](https://www.gutenberg.org/) for more).
-    - [War and Peace](https://www.moreno.marzolla.name/teaching/HPC/handouts/war-and-peace.txt) by L. Tolstoy
-    - [The Hound of the Baskervilles](https://www.moreno.marzolla.name/teaching/HPC/handouts/the-hound-of-the-baskervilles.txt)
+    - [War and Peace](input/war-and-peace.txt) by L. Tolstoy
+    - [The Hound of the Baskervilles](input/the-hound-of-the-baskervilles.txt)
       by A. C. Doyle
-    - [The War of the Worlds](https://www.moreno.marzolla.name/teaching/HPC/handouts/the-war-of-the-worlds.txt) by H. G. Wells
+    - [The War of the Worlds](input/the-war-of-the-worlds.txt) by H. G. Wells

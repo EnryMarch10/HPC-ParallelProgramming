@@ -1,6 +1,6 @@
 # Arnold’s cat map
 
-![Figure 1](img/cat-map.png)
+![Figure 1: Arnold's cat map](img/cat-map.png)
 
 [Arnold's cat map](https://en.wikipedia.org/wiki/Arnold%27s_cat_map) is a continuous chaotic function that has been studied in the
 '60s by the Russian mathematician [Vladimir Igorevich Arnold](https://en.wikipedia.org/wiki/Vladimir_Arnold).
@@ -16,9 +16,7 @@ $(N-1, N-1)$ is bottom right, so that the bitmap can be encoded as a regular two
 The transformation corresponds to a linear “stretching” of the image, that is then broken down into triangles that are rearranged
 as shown in Figure 1.
 
-![Figure 2](img/cat-map.svg)
-
-*Arnold's cat map*
+![Figure 2: Arnold's cat map transitions](img/cat-map.svg)
 
 Arnold’s cat map has interesting properties. Let $C^k(x, y)$ be the $k$-th iterate of $C$, i.e.:
 
@@ -38,13 +36,11 @@ As we keep applying $C$, the original image is no longer discernible.
 However, after a certain number of iterations, that depends on the image size $N$ and has been proved to never exceed $3N$,
 we get back the original image! (Figure 2).
 
-![Figure 3](img/cat-map-demo.png)
-
-*Some iterations of the cat map*
+![Figure 3: Some iterations of the cat map](img/cat-map-demo.png)
 
 The *minimum recurrence time* is the minimum number of iterations $k \geq 1$ such that produce the original image, i.e.,
 $C^k(x, y) = (x, y)$ for all $(x, y)$.
-For example, the minimum recurrence time for [cat1368.pgm](https://www.moreno.marzolla.name/teaching/HPC/handouts/cat1368.pgm)
+For example, the minimum recurrence time for [cat1368.pgm](input/cat1368.pgm)
 of size 1368x1368 is 36.
 
 The minimum recurrence time depends on the image size $N$ only.
@@ -185,7 +181,7 @@ but provides worse performance on the Xeon processors.
 
 ## To probe further
 
-What is the minimum recurrence time of image [cat1024.pgm](https://www.moreno.marzolla.name/teaching/HPC/handouts/cat1024.pgm)
+What is the minimum recurrence time of image [cat1024.pgm](input/cat1024.pgm)
 of size 1024x1024? We can answer this question without the need for an input image.
 To understand how, let us suppose that one particular pixel, say $(x_1, y_1)$, has minimum recurrence time 15.
 This means that after 15 iterations, the pixel at coordinates $(x_1, y_1)$ will return to its starting position.
@@ -211,20 +207,18 @@ Table 2 shows the minimum recurrence time for some $N$.
 Figure 3 shows the minimum recurrence time as a function of $N$.
 Despite the fact that the values jumps around, they tend to align along straight lines.
 
-![Figure 3](img/cat-map-rectime.png)
+![Figure 3: Minimum recurrence time as a function of the image size $N$](img/cat-map-rectime.png)
 
-*Minimum recurrence time as a function of the image size $N$*
-
-[omp-cat-map-rectime.c](https://www.moreno.marzolla.name/teaching/HPC/handouts/omp-cat-map-rectime.c) contains an incomplete
+[omp-cat-map-rectime.c](base/omp-cat-map-rectime.c) contains an incomplete
 skeleton of a program that computes the minimum recurrence time of a $N \times N$ image.
 Complete the serial program, and then implement a parallel version using OpenMP.
 
 ## Files
 
-- [omp-cat-map.c](https://www.moreno.marzolla.name/teaching/HPC/handouts/omp-cat-map.c)
-  [hpc.h](https://www.moreno.marzolla.name/teaching/HPC/handouts/hpc.h)
-- [omp-cat-map-rectime.c](https://www.moreno.marzolla.name/teaching/HPC/handouts/omp-cat-map-rectime.c)
-- [cat1024.pgm](https://www.moreno.marzolla.name/teaching/HPC/handouts/cat1024.pgm)
+- [omp-cat-map.c](base/omp-cat-map.c)
+  [hpc.h](../../include/hpc.h)
+- [omp-cat-map-rectime.c](base/omp-cat-map-rectime.c)
+- [cat1024.pgm](input/cat1024.pgm)
   (what is the minimum recurrence time of this image?)
-- [cat1368.pgm](https://www.moreno.marzolla.name/teaching/HPC/handouts/cat1368.pgm)
+- [cat1368.pgm](input/cat1368.pgm)
   (verify that the minimum recurrence time of this image is 36)

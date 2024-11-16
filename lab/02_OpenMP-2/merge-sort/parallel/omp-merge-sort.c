@@ -1,70 +1,3 @@
-/****************************************************************************
- *
- * omp-merge-sort.c - Merge Sort with OpenMP tasks
- *
- * Copyright (C) 2017--2024 by Moreno Marzolla <https://www.moreno.marzolla.name/>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- ****************************************************************************/
-
-/***
-% HPC - Merge Sort with OpenMP tasks
-% [Moreno Marzolla](https://www.moreno.marzolla.name/)
-% Last updated: 2024-10-23
-
-The file [omp-merge-sort.c](omp-merge-sort.c) contains a recursive
-implementation of the _Merge Sort_ algorithm. The program uses
-_Selection Sort_ when the size of the subvector is less than a
-user-defined cutoff value; this is a standard optimization that avoids
-the overhead of recursive calls on small vectors.
-
-The program generates and sorts a random permutation of $0, 1, \ldots,
-n-1$; it if therefore easy to check the correctness of the result,
-since it must be the sequence $0, 1, \ldots, n-1$.
-
-The goal is to parallelize the Merge Sort algorithm using OpenMP
-tasks as follows:
-
-- The recursion starts inside a parallel region; only one process
-  starts the recursion.
-
-- Create two tasks for the two recursive calls; pay attention to the
-  visibility (scope) of variables.
-
-- Wait for the two sub-tasks to complete before starting the _merge_
-  step.
-
-Measure the execution time of the parallel program and compare it with
-the serial implementation. To get meaningful results, choose an input
-size that requires at least a few seconds to be sorted using all
-available cores.
-
-To compile:
-
-        gcc -std=c99 -Wall -Wpedantic -fopenmp omp-merge-sort.c -o omp-merge-sort
-
-To execute:
-
-        ./omp-merge-sort 50000
-
-## Files
-
-- [omp-merge-sort.c](omp-merge-sort.c)
-
-***/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -81,10 +14,10 @@ To execute:
 
 int min(int a, int b)
 {
-    return (a < b ? a : b);
+    return a < b ? a : b;
 }
 
-void swap(int* a, int* b)
+void swap(int *a, int *b)
 {
     int tmp = *a;
     *a = *b;
@@ -95,7 +28,7 @@ void swap(int* a, int* b)
  * Sort v[low..high] using selection sort. This function will be used
  * for small vectors only. Do not parallelize this.
  */
-void selectionsort(int* v, int low, int high)
+void selectionsort(int *v, int low, int high)
 {
     for (int i = low; i < high; i++) {
         for (int j = i + 1; j <= high; j++) {
@@ -143,7 +76,7 @@ void merge(int* src, int low, int mid, int high, int* dst)
  * responsible for providing a suitably sized array `tmp`. This
  * function must not free `tmp`.
  */
-void mergesort_rec(int* v, int i, int j, int* tmp)
+void mergesort_rec(int *v, int i, int j, int *tmp)
 {
     const int CUTOFF = 64;
     /* If the sub-vector is smaller than CUTOFF, use selection
@@ -188,7 +121,7 @@ void mergesort_rec(int* v, int i, int j, int* tmp)
  */
 void mergesort(int *v, int n)
 {
-    int* tmp = (int*) malloc(n * sizeof(v[0]));
+    int *tmp = (int *) malloc(n * sizeof(v[0]));
     assert(tmp != NULL);
     /* [TODO] Create a parallel region, and make sure that only one
        thread calls mergesort_rec() to start the recursion. */
@@ -221,7 +154,7 @@ void print_array(int arr[], int size, FILE *file) {
     fprintf(file, "]\n");
 }
 
-void create_unsorted_array(int* arr, int size, int lower_bound, int upper_bound) {
+void create_unsorted_array(int *arr, int size, int lower_bound, int upper_bound) {
     assert(upper_bound >= lower_bound);
 #pragma omp parallel default(none) if(size > 100000) shared(arr, size, lower_bound, upper_bound)
     {
@@ -234,7 +167,7 @@ void create_unsorted_array(int* arr, int size, int lower_bound, int upper_bound)
 }
 
 /* Return 1 iff a[] contains the values 0, 1, ... n-1, in that order */
-int is_correct(const int* a, int n)
+int is_correct(const int *a, int n)
 {
     for (int i = 0; i < n - 1; i++) {
         if (a[i] > a[i + 1]) {
@@ -248,7 +181,7 @@ int is_correct(const int* a, int n)
 #define DEFAULT_SIZE 10000000 // int
 #define MAX_SIZE 1000000000 // int
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     int n = DEFAULT_SIZE;
 
@@ -301,6 +234,5 @@ int main(int argc, char* argv[])
     printf("!! Elapsed time: %.2f s !!\n", t_elapsed);
 
     free(a);
-
     return EXIT_SUCCESS;
 }
