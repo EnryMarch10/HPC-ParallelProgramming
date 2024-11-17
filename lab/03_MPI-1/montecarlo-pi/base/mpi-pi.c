@@ -32,31 +32,31 @@
 /* Generate `n` random points within the square with corners (-1, -1),
    (1, 1); return the number of points that fall inside the circle
    centered ad the origin with radius 1 */
-int generate_points( int n )
+int generate_points(int n)
 {
     int n_inside = 0;
-    for (int i=0; i<n; i++) {
-        const double x = (rand()/(double)RAND_MAX * 2.0) - 1.0;
-        const double y = (rand()/(double)RAND_MAX * 2.0) - 1.0;
-        if ( x*x + y*y < 1.0 ) {
+    for (int i = 0; i < n; i++) {
+        const double x = (rand() / (double) RAND_MAX * 2.0) - 1.0;
+        const double y = (rand() / (double) RAND_MAX * 2.0) - 1.0;
+        if (x * x + y * y < 1.0) {
             n_inside++;
         }
     }
     return n_inside;
 }
 
-int main( int argc, char *argv[] )
+int main(int argc, char *argv[])
 {
     int my_rank, comm_sz;
-    int inside = 0, npoints = 1000000;
+    int inside = 0, n_points = 1000000;
     double pi_approx;
 
-    MPI_Init( &argc, &argv );
-    MPI_Comm_rank( MPI_COMM_WORLD, &my_rank );
-    MPI_Comm_size( MPI_COMM_WORLD, &comm_sz );
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
 
-    if ( argc > 1 ) {
-        npoints = atoi(argv[1]);
+    if (argc > 1) {
+        n_points = atoi(argv[1]);
     }
 
     /* Each process initializes the pseudo-random number generator; if
@@ -66,10 +66,10 @@ int main( int argc, char *argv[] )
 
     /* [TODO] This is not a true parallel version; the master does
        everything */
-    if ( 0 == my_rank ) {
-        inside = generate_points(npoints);
-        pi_approx = 4.0 * inside / (double)npoints;
-        printf("PI approximation is %f (true value=%f, rel error=%.3f%%)\n", pi_approx, M_PI, 100.0*fabs(pi_approx-M_PI)/M_PI);
+    if (my_rank == 0) {
+        inside = generate_points(n_points);
+        pi_approx = 4.0 * inside / (double) n_points;
+        printf("PI approximation is %f (true value=%f, rel error=%.3f%%)\n", pi_approx, M_PI, 100.0 * fabs(pi_approx - M_PI) / M_PI);
     }
 
     MPI_Finalize();

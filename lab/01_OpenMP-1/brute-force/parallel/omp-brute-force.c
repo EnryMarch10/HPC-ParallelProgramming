@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
     {
         // printf("Inside par region: threads=%d, max=%d\n",
         //     omp_get_num_threads(), omp_get_max_threads());
-        char * const out = (char*) malloc(msglen); /* where to put the decrypted message */
+        char *const out = (char *) malloc(msglen); /* where to put the decrypted message */
         assert(out != NULL);
         const int my_id = omp_get_thread_num();
         const int num_threads = omp_get_num_threads();
