@@ -1,0 +1,1 @@
+convert rule30.pbm rule30.jpg
