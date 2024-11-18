@@ -1,24 +1,3 @@
-/****************************************************************************
- *
- * mpi-mandelbrot.c - Mandelbrot set
- *
- * Copyright (C) 2017--2023 by Moreno Marzolla <https://www.moreno.marzolla.name/>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- ****************************************************************************/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -125,6 +104,7 @@ int main(int argc, char *argv[])
     x_size = y_size * 1.4;
 
     /* x_size and y_size are known to all processes */
+    int size;
     if (my_rank == 0) {
         out = fopen(fname, "w");
         if (!out) {
@@ -138,12 +118,65 @@ int main(int argc, char *argv[])
         fprintf(out, "255\n");
 
         /* Allocate the complete bitmap */
-        bitmap = (pixel_t *) malloc(x_size * y_size * sizeof(*bitmap));
+        size = x_size * y_size;
+        bitmap = (pixel_t *) malloc(size * sizeof(*bitmap));
         assert(bitmap != NULL);
-        /* [TODO] This is not a true parallel version, since the master
-           does everything */
-        draw_lines(0, y_size, bitmap, x_size, y_size);
-        fwrite(bitmap, sizeof(*bitmap), x_size * y_size, out);
+    }
+
+    const int my_start = y_size * my_rank / comm_sz;
+    const int my_end = y_size * (my_rank + 1) / comm_sz;
+
+    const int local_y_size = my_end - my_start;
+
+    /* Allocate the partial bitmaps */
+    const int local_size = x_size * local_y_size;
+    pixel_t *local_bitmap = (pixel_t *) malloc(local_size * sizeof(*local_bitmap));
+    assert(local_bitmap != NULL);
+
+    draw_lines(my_start, my_end, local_bitmap, x_size, y_size);
+
+    int *recvcounts = NULL;
+    int *displs = NULL;
+    if (my_rank == 0) {
+        recvcounts = (int *) malloc(comm_sz * sizeof(*recvcounts));
+        assert(recvcounts != NULL);
+        displs = (int *) malloc(comm_sz * sizeof(*displs));
+        assert(displs != NULL);
+
+        recvcounts[0] = local_size;
+        displs[0] = 0;
+        for (int i = 1; i < comm_sz; i++) {
+            const int start = y_size * i / comm_sz;
+            const int end = y_size * (i + 1) / comm_sz;
+            recvcounts[i] = (end - start) * x_size;
+            displs[i] = start * x_size;
+        }
+    }
+
+    int blklen = 3;
+    MPI_Aint displ = 0;
+    MPI_Datatype oldtype = MPI_UINT8_T, rgb_pixel_t;
+    MPI_Type_create_struct(1, &blklen, &displ, &oldtype, &rgb_pixel_t);
+    MPI_Type_commit(&rgb_pixel_t);
+
+    MPI_Gatherv(local_bitmap,  /* sendbuf    */
+                local_size,    /* sendcount  */
+                rgb_pixel_t,   /* sendtype   */
+                bitmap,        /* recvbuf    */
+                recvcounts,    /* recvcounts */
+                displs,        /* displs     */
+                rgb_pixel_t,   /* recvtype   */
+                0,             /* root       */
+                MPI_COMM_WORLD /* comm       */
+                );
+
+    MPI_Type_free(&rgb_pixel_t);
+    free(local_bitmap);
+    free(recvcounts);
+    free(displs);
+
+    if (my_rank == 0) {
+        fwrite(bitmap, sizeof(*bitmap), size, out);
         fclose(out);
         free(bitmap);
     }
