@@ -54,7 +54,7 @@ const pixel_t colors[] = {
     {204, 128,   0},
     {153,  87,   0},
     {106,  52,   3} };
-const int NCOLORS = sizeof(colors) / sizeof(colors[0]);
+const int NCOLORS = sizeof(colors)/sizeof(colors[0]);
 
 /*
  * Iterate the recurrence:
@@ -82,14 +82,14 @@ int iterate(float cx, float cy)
    `y_end` (excluded) to the bitmap pointed to by `p`. Note that `p`
    must point to the beginning of the bitmap where the portion of
    image will be stored; in other words, this function writes to
-   pixels p[0], p[1], ... `x_size` and `y_size` MUST be the sizes
+   pixels p[0], p[1], ... `xsize` and `y_size` MUST be the sizes
    of the WHOLE image. */
-void draw_lines(int y_start, int y_end, pixel_t* p, int x_size, int y_size)
+void draw_lines(int y_start, int y_end, pixel_t* p, int xsize, int y_size)
 {
     int x, y;
     for (y = y_start; y < y_end; y++) {
-        for (x = 0; x < x_size; x++) {
-            const float cx = -2.5 + 3.5 * (float) x / (x_size - 1);
+        for (x = 0; x < xsize; x++) {
+            const float cx = -2.5 + 3.5 * (float) x / (xsize - 1);
             const float cy = 1 - 2.0 * (float) y / (y_size - 1);
             const int v = iterate(cx, cy);
             if (v < MAX_IT) {
@@ -108,9 +108,9 @@ int main(int argc, char *argv[])
 {
     int my_rank, comm_sz;
     FILE *out = NULL;
-    const char *fname = "mandelbrot.ppm";
+    const char* fname = "mandelbrot.ppm";
     pixel_t *bitmap = NULL;
-    int x_size, y_size;
+    int xsize, y_size;
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
@@ -122,9 +122,9 @@ int main(int argc, char *argv[])
         y_size = 1024;
     }
 
-    x_size = y_size * 1.4;
+    xsize = y_size * 1.4;
 
-    /* x_size and y_size are known to all processes */
+    /* xsize and y_size are known to all processes */
     if (my_rank == 0) {
         out = fopen(fname, "w");
         if (!out) {
@@ -134,19 +134,99 @@ int main(int argc, char *argv[])
 
         /* Write the header of the output file */
         fprintf(out, "P6\n");
-        fprintf(out, "%d %d\n", x_size, y_size);
+        fprintf(out, "%d %d\n", xsize, y_size);
         fprintf(out, "255\n");
 
         /* Allocate the complete bitmap */
-        bitmap = (pixel_t *) malloc(x_size * y_size * sizeof(*bitmap));
+        bitmap = (pixel_t *) malloc(xsize * y_size * sizeof(*bitmap));
         assert(bitmap != NULL);
-        /* [TODO] This is not a true parallel version, since the master
-           does everything */
-        draw_lines(0, y_size, bitmap, x_size, y_size);
-        fwrite(bitmap, sizeof(*bitmap), x_size * y_size, out);
-        fclose(out);
-        free(bitmap);
     }
+
+#ifdef USE_GATHERV
+    /* This version makes use of MPI_Gatherv to collect portions of
+       different sizes. To compile this version, use:
+
+       mpicc -std=c99 -Wall -Wpedantic -DUSE_GATHERV mpi-mandelbrot.c -o mpi-mandelbrot
+
+    */
+    int y_start[comm_sz], y_end[comm_sz], counts[comm_sz], displs[comm_sz];
+    for (int i = 0; i < comm_sz; i++) {
+        y_start[i] = y_size * i / comm_sz;
+        y_end[i] = y_size * (i + 1) / comm_sz;
+        /* counts[] and displs[] must be measured as the number of
+           "array elements", NOT bytes; however, in this case the type
+           of array elements that are gathered together is MPI_BYTE
+           (see MPI_Gatherv below), so we need to multiply by
+           sizeof(pixel_t) */
+        counts[i] = (y_end[i] - y_start[i]) * xsize * sizeof(pixel_t);
+        displs[i] = y_start[i] * xsize * sizeof(pixel_t);
+    }
+
+    pixel_t *local_bitmap = (pixel_t *) malloc(counts[my_rank]);
+    assert(local_bitmap != NULL);
+
+    const double tstart = MPI_Wtime();
+
+    draw_lines(y_start[my_rank], y_end[my_rank], local_bitmap, xsize, y_size);
+
+    MPI_Gatherv(local_bitmap,    /* sendbuf      */
+                counts[my_rank], /* sendcount    */
+                MPI_BYTE,        /* datatype     */
+                bitmap,          /* recvbuf      */
+                counts,          /* recvcounts[] */
+                displs,          /* displacements[] */
+                MPI_BYTE,        /* datatype     */
+                0,               /* root         */
+                MPI_COMM_WORLD
+                );
+
+    const double elapsed = MPI_Wtime() - tstart;
+
+    if (my_rank == 0) {
+        fwrite(bitmap, sizeof(*bitmap), xsize * y_size, out);
+        fclose(out);
+
+        printf("Elapsed time (s): %f\n", elapsed);
+    }
+    free(bitmap);
+    free(local_bitmap);
+#else
+    const int local_y_size = y_size / comm_sz;
+    const int y_start = local_y_size * my_rank;
+    const int y_end = local_y_size * (my_rank + 1);
+    pixel_t *local_bitmap = (pixel_t *) malloc(xsize * local_y_size * sizeof(*local_bitmap));
+    assert(local_bitmap != NULL);
+
+    const double tstart = MPI_Wtime();
+
+    draw_lines(y_start, y_end, local_bitmap, xsize, y_size);
+
+    MPI_Gather(local_bitmap,             /* sendbuf      */
+               xsize * local_y_size * 3, /* sendcount    */
+               MPI_BYTE,                 /* datatype     */
+               bitmap,                   /* recvbuf      */
+               xsize * local_y_size * 3, /* recvcount    */
+               MPI_BYTE,                 /* datatype     */
+               0,                        /* root         */
+               MPI_COMM_WORLD
+               );
+
+    if (my_rank == 0) {
+        /* the master computes the last (y_size % comm_sz) lines of the image */
+        if (y_size % comm_sz) {
+            const int skip = local_y_size * comm_sz; /* how many rows to skip */
+            draw_lines(skip, y_size, &bitmap[skip * xsize], xsize, y_size);
+        }
+        const double elapsed = MPI_Wtime() - tstart;
+
+        fwrite(bitmap, sizeof(*bitmap), xsize * y_size, out);
+        fclose(out);
+
+        printf("Elapsed time (s): %f\n", elapsed);
+    }
+    free(bitmap);
+    free(local_bitmap);
+#endif
 
     MPI_Finalize();
     return EXIT_SUCCESS;

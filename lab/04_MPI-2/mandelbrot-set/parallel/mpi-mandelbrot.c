@@ -33,7 +33,7 @@ const pixel_t colors[] = {
     {204, 128,   0},
     {153,  87,   0},
     {106,  52,   3} };
-const int N_COLORS = sizeof(colors) / sizeof(colors[0]);
+const int NCOLORS = sizeof(colors) / sizeof(colors[0]);
 
 /*
  * Iterate the recurrence:
@@ -72,9 +72,9 @@ void draw_lines(int y_start, int y_end, pixel_t* p, int x_size, int y_size)
             const float cy = 1 - 2.0 * (float) y / (y_size - 1);
             const int v = iterate(cx, cy);
             if (v < MAX_IT) {
-                p->r = colors[v % N_COLORS].r;
-                p->g = colors[v % N_COLORS].g;
-                p->b = colors[v % N_COLORS].b;
+                p->r = colors[v % NCOLORS].r;
+                p->g = colors[v % NCOLORS].g;
+                p->b = colors[v % NCOLORS].b;
             } else {
                 p->r = p->g = p->b = 0;
             }
