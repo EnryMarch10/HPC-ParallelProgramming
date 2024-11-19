@@ -22,6 +22,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  ****************************************************************************/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -159,7 +160,7 @@ static void sclCheckError(cl_int err, const char *fmt, ...)
     }
 }
 
-static void sclCheckDeviceInitialized( void )
+static void sclCheckDeviceInitialized(void)
 {
     if (scl_dev == NULL) {
         sclPanic("Hardware not initialized. You must call sclInit() at the beginning of your program\n");
@@ -249,24 +250,25 @@ static void sclPrintDeviceInfo(sclDevice *dev)
     }
 
     // print out device info
-    sclDebug( "\n\nInfo for device %d:\n\n", dev->devNum);
-    sclDebug( "%-*s %s\n", f, "Name:", deviceName);
-    sclDebug( "%-*s %s\n", f, "Vendor:", vendor);
-    sclDebug( "%-*s %s\n", f, "OpenCL version:", opencl_version);
-    sclDebug( "%-*s %s\n", f, "Available:", available ? "Yes" : "No");
-    sclDebug( "%-*s %u\n", f, "Compute units:", numberOfCores);
-    sclDebug( "%-*s %u MHz\n", f, "Clock frequency:", clockFreq);
-    sclDebug( "%-*s %0.00f MB\n", f, "Global memory:", (double)amountOfMemory/1048576);
-    sclDebug( "%-*s %0.00f MB\n", f, "Max allocatable memory:", (double)maxAllocatableMem/1048576);
-    sclDebug( "%-*s %u KB\n", f, "Local memory:", (unsigned int)localMem);
-    sclDebug( "%-*s %lu\n", f, "Max work group size:", device_wg_size);
+    sclDebug("\n\nInfo for device %d:\n\n", dev->devNum);
+    sclDebug("%-*s %s\n", f, "Name:", deviceName);
+    sclDebug("%-*s %s\n", f, "Vendor:", vendor);
+    sclDebug("%-*s %s\n", f, "OpenCL version:", opencl_version);
+    sclDebug("%-*s %s\n", f, "Available:", available ? "Yes" : "No");
+    sclDebug("%-*s %u\n", f, "Compute units:", numberOfCores);
+    sclDebug("%-*s %u MHz\n", f, "Clock frequency:", clockFreq);
+    sclDebug("%-*s %0.00f MB\n", f, "Global memory:", (double) amountOfMemory / 1048576);
+    sclDebug("%-*s %0.00f MB\n", f, "Max allocatable memory:", (double) maxAllocatableMem / 1048576);
+    sclDebug("%-*s %u KB\n", f, "Local memory:", (unsigned int) localMem);
+    sclDebug("%-*s %lu\n", f, "Max work group size:", device_wg_size);
     if (device_wi_dimensions == 3) {
-        sclDebug( "%-*s %d,%d,%d\n", f, "Max work iten sizes:", (int)device_wi_sizes[0], (int)device_wi_sizes[1], (int)device_wi_sizes[2]);
+        sclDebug("%-*s %d,%d,%d\n", f, "Max work iten sizes:",
+                 (int) device_wi_sizes[0], (int) device_wi_sizes[1], (int) device_wi_sizes[2]);
     }
-    sclDebug( "\n\n" );
+    sclDebug("\n\n");
 }
 
-static int sclGetDefaultDeviceNo( int ndevices )
+static int sclGetDefaultDeviceNo(int ndevices)
 {
     const char* env = getenv(ENV_VAR_NAME);
     int device = 0;
@@ -280,16 +282,16 @@ static int sclGetDefaultDeviceNo( int ndevices )
     return device;
 }
 
-static void sclPrintDeviceNamePlatforms( sclDevice* devices, int n, int default_dev_no )
+static void sclPrintDeviceNamePlatforms(sclDevice* devices, int n, int default_dev_no)
 {
     cl_char deviceName[MAX_STR_LEN];
     cl_char platformVendor[MAX_STR_LEN];
     cl_char platformName[MAX_STR_LEN];
 
-    for ( int i = 0; i < n; ++i ) {
-        clGetPlatformInfo( devices[i].platform_id, CL_PLATFORM_NAME, sizeof(platformName), platformName, NULL );
-        clGetPlatformInfo( devices[i].platform_id, CL_PLATFORM_VENDOR, sizeof(platformVendor), platformVendor, NULL );
-        clGetDeviceInfo( devices[i].device_id, CL_DEVICE_NAME, sizeof(deviceName), deviceName, NULL );
+    for (int i = 0; i < n; ++i) {
+        clGetPlatformInfo(devices[i].platform_id, CL_PLATFORM_NAME, sizeof(platformName), platformName, NULL);
+        clGetPlatformInfo(devices[i].platform_id, CL_PLATFORM_VENDOR, sizeof(platformVendor), platformVendor, NULL);
+        clGetDeviceInfo(devices[i].device_id, CL_DEVICE_NAME, sizeof(deviceName), deviceName, NULL);
         sclDebug("Device %d%s\n", devices[i].devNum,
                  (i == default_dev_no ? " USED" : ""));
         sclDebug("\tPlatform.. %s\n", platformName);
@@ -297,15 +299,13 @@ static void sclPrintDeviceNamePlatforms( sclDevice* devices, int n, int default_
         sclDebug("\tDevice.... %s\n", deviceName );
     }
 }
-
-
 
 /******************************************************************************
  **
  ** Public functions
  **
  ******************************************************************************/
-const char *sclGetErrorString( cl_int err )
+const char *sclGetErrorString(cl_int err)
 {
     static struct {
         cl_int errcode;
@@ -367,14 +367,12 @@ const char *sclGetErrorString( cl_int err )
     static char errMessageUnknown[MAX_STR_LEN];
     int i;
 
-    for (i=0; (errmessages[i].errcode != err) &&
-             (errmessages[i].msg != NULL); i++)
+    for (i = 0; (errmessages[i].errcode != err) && (errmessages[i].msg != NULL); i++)
         { /* empty body */ }
     if (errmessages[i].msg != NULL) {
         return errmessages[i].msg;
     } else {
-        snprintf(errMessageUnknown, sizeof(errMessageUnknown),
-                 "Unknown error code %d", err);
+        snprintf(errMessageUnknown, sizeof(errMessageUnknown), "Unknown error code %d", err);
         return errMessageUnknown;
     }
 }
@@ -429,7 +427,7 @@ source code is in the string `source`.
 This function may be called at most once.
 
  ***/
-void sclInitFromString( const char *source )
+void sclInitFromString(const char *source)
 {
     cl_uint nPlatforms = 0;
     cl_platform_id platforms[MAX_PLATFORMS];
@@ -438,7 +436,7 @@ void sclInitFromString( const char *source )
     int dev_count = 0;
 
     if (scl_dev != NULL) {
-        sclPanic( "Device already initialized; you can not call sclInitFromString()/sclInitFromFile() more than once\n" );
+        sclPanic("Device already initialized; you can not call sclInitFromString()/sclInitFromFile() more than once\n");
     }
 
     /* check if debug must be disabled */
@@ -446,22 +444,22 @@ void sclInitFromString( const char *source )
         sclDebugEnabled = 0;
     }
 
-    cl_int err = clGetPlatformIDs( MAX_PLATFORMS, platforms, &nPlatforms );
+    cl_int err = clGetPlatformIDs(MAX_PLATFORMS, platforms, &nPlatforms);
     if (err != CL_SUCCESS || nPlatforms == 0) {
         sclPanic( "No OpenCL platform found\n");
     }
 
     /* Enumerate platforms and devices */
-    for ( int p = 0; p < (int)nPlatforms; p++ ) {
+    for (int p = 0; p < (int) nPlatforms; p++) {
         cl_uint nDevices = 0;
-        err = clGetDeviceIDs( platforms[p], CL_DEVICE_TYPE_ALL, MAX_DEVICES, device_ids, &nDevices );
-        if ( nDevices == 0 ) {
+        err = clGetDeviceIDs(platforms[p], CL_DEVICE_TYPE_ALL, MAX_DEVICES, device_ids, &nDevices);
+        if (nDevices == 0) {
             fprintf(stderr, "No OpenCL enabled device found for platform %d\n", p);
         } else {
-            for ( int d = 0; d < (int)nDevices; d++ ) {
-                devices[ dev_count ].platform_id    = platforms[ p ];
-                devices[ dev_count ].device_id      = device_ids[ d ];
-                devices[ dev_count ].devNum         = dev_count;
+            for (int d = 0; d < (int) nDevices; d++) {
+                devices[dev_count].platform_id = platforms[p];
+                devices[dev_count].device_id = device_ids[d];
+                devices[dev_count].devNum = dev_count;
                 dev_count++;
             }
         }
@@ -478,7 +476,7 @@ void sclInitFromString( const char *source )
     scl_dev->queue = clCreateCommandQueue(scl_dev->context, scl_dev->device_id, CL_QUEUE_PROFILING_ENABLE, &err);
     sclCheckError(err, "clCreateCommandQueue error in sclInitFromStringt: %s\n", sclGetErrorString(err));
 
-    scl_dev->program = clCreateProgramWithSource( scl_dev->context, 1, (const char**)&source, NULL, &err );
+    scl_dev->program = clCreateProgramWithSource(scl_dev->context, 1, (const char**)&source, NULL, &err);
     sclCheckError(err, "clCreateProgramWithSource error in sclInitFromString: %s\n", sclGetErrorString(err));
 
     /* retrieve max workgroup size */
@@ -488,10 +486,14 @@ void sclInitFromString( const char *source )
     /* compute sizes for 1D, 2D, 3D workgroups */
     SCL_DEFAULT_WG_SIZE1D = SCL_DEFAULT_WG_SIZE;
 
-    for (SCL_DEFAULT_WG_SIZE2D = 1; SCL_DEFAULT_WG_SIZE2D*SCL_DEFAULT_WG_SIZE2D <= SCL_DEFAULT_WG_SIZE; SCL_DEFAULT_WG_SIZE2D *= 2) ;
+    for (SCL_DEFAULT_WG_SIZE2D = 1;
+         SCL_DEFAULT_WG_SIZE2D * SCL_DEFAULT_WG_SIZE2D <= SCL_DEFAULT_WG_SIZE;
+         SCL_DEFAULT_WG_SIZE2D *= 2) ;
     SCL_DEFAULT_WG_SIZE2D /= 2;
 
-    for (SCL_DEFAULT_WG_SIZE3D = 1; SCL_DEFAULT_WG_SIZE3D*SCL_DEFAULT_WG_SIZE3D*SCL_DEFAULT_WG_SIZE3D <= SCL_DEFAULT_WG_SIZE; SCL_DEFAULT_WG_SIZE3D *= 2) ;
+    for (SCL_DEFAULT_WG_SIZE3D = 1;
+         SCL_DEFAULT_WG_SIZE3D * SCL_DEFAULT_WG_SIZE3D * SCL_DEFAULT_WG_SIZE3D <= SCL_DEFAULT_WG_SIZE;
+         SCL_DEFAULT_WG_SIZE3D *= 2) ;
     SCL_DEFAULT_WG_SIZE3D /= 2;
 
     char build_options[MAX_STR_LEN];
@@ -504,13 +506,13 @@ void sclInitFromString( const char *source )
              "-D SCL_DEFAULT_WG_SIZE1D=%d "
              "-D SCL_DEFAULT_WG_SIZE2D=%d "
              "-D SCL_DEFAULT_WG_SIZE3D=%d",
-             (int)SCL_DEFAULT_WG_SIZE,
-             (int)SCL_DEFAULT_WG_SIZE1D,
-             (int)SCL_DEFAULT_WG_SIZE2D,
-             (int)SCL_DEFAULT_WG_SIZE3D);
-    err = clBuildProgram( scl_dev->program, 0, NULL, build_options, NULL, NULL );
+             (int) SCL_DEFAULT_WG_SIZE,
+             (int) SCL_DEFAULT_WG_SIZE1D,
+             (int) SCL_DEFAULT_WG_SIZE2D,
+             (int) SCL_DEFAULT_WG_SIZE3D);
+    err = clBuildProgram(scl_dev->program, 0, NULL, build_options, NULL, NULL);
     if ( err != CL_SUCCESS ) {
-        clGetProgramBuildInfo( scl_dev->program, scl_dev->device_id, CL_PROGRAM_BUILD_LOG, sizeof(build_log), build_log, NULL );
+        clGetProgramBuildInfo(scl_dev->program, scl_dev->device_id, CL_PROGRAM_BUILD_LOG, sizeof(build_log), build_log, NULL);
         fprintf(stderr, "\n\n----- COMPILATION ERROR for OpenCL program\n");
         fputs(build_log, stderr);
         fprintf(stderr, "----- END COMPILATION ERROR\n\n");
@@ -520,7 +522,7 @@ void sclInitFromString( const char *source )
 
 /***
 
-## `void sclInitFromFile( const char *filename )`
+## `void sclInitFromFile(const char *filename)`
 
 Initialize the default OpenCL device and loads the program whose
 source code is in file `filename`.
@@ -528,22 +530,22 @@ source code is in file `filename`.
 This function may be called at most once.
 
 ***/
-void sclInitFromFile( const char *filename )
+void sclInitFromFile(const char *filename)
 {
-    FILE *f = fopen( filename, "r" );
-    if ( f == NULL ) {
+    FILE *f = fopen(filename, "r");
+    if (f == NULL) {
         sclPanic("Can not open program file \"%s\"\n", filename);
     }
     fseek(f, 0L, SEEK_END);
     const size_t size = ftell(f);
     rewind(f);
-    char *source = (char *)malloc( size + 1 );
+    char *source = (char *) malloc(size + 1);
     assert(source != NULL);
-    if( fread( source, 1, size, f ) != size ) {
+    if (fread(source, 1, size, f) != size) {
         sclPanic("Error loading program file \"%s\"\n", filename);
     }
-    source[ size ] = '\0';
-    fclose( f );
+    source[size] = '\0';
+    fclose(f);
     sclInitFromString(source);
     free(source);
 }
@@ -557,26 +559,24 @@ up the environment. After this function is called, no more OpenCL
 commands can be issued.
 
  ***/
-void sclFinalize( void )
+void sclFinalize(void)
 {
     sclCheckDeviceInitialized();
 
     cl_int err;
 
     sclDeviceSynchronize();
-    err = clReleaseProgram( scl_dev->program );
+    err = clReleaseProgram(scl_dev->program);
     sclCheckError(err, "clReleaseProgram in sclFinalize: %s\n", sclGetErrorString(err));
 
-    err = clReleaseCommandQueue( scl_dev->queue);
+    err = clReleaseCommandQueue(scl_dev->queue);
     sclCheckError(err, "clReleaseCommandQueue in sclFinalize: %s\n", sclGetErrorString(err));
 
-    err = clReleaseContext( scl_dev->context );
+    err = clReleaseContext(scl_dev->context);
     sclCheckError(err, "clReleaseContext in sclFinalize: %s\n", sclGetErrorString(err));
 
     scl_dev = NULL;
 }
-
-
 
 /******************************************************************************
  **
@@ -606,14 +606,14 @@ The supported values are:
   behavior).
 
  ***/
-cl_mem sclMalloc( size_t size, cl_int mode )
+cl_mem sclMalloc(size_t size, cl_int mode)
 {
     sclCheckDeviceInitialized();
 
     cl_int err;
-    cl_mem buffer = clCreateBuffer( scl_dev->context, mode, size, NULL, &err );
+    cl_mem buffer = clCreateBuffer(scl_dev->context, mode, size, NULL, &err);
     sclCheckError(err, "clCreateBuffer error in sclMalloc: %s\n", sclGetErrorString(err));
-    if ( buffer == NULL ) {
+    if (buffer == NULL) {
         sclPanic("clCreateBuffer error in sclMalloc: NULL returned");
     }
     return buffer;
@@ -633,14 +633,14 @@ This function is locally equivalent to `sclMalloc()` followed by
 `sclMallocCopy()`, depending on the device.
 
 ***/
-cl_mem sclMallocCopy( size_t size, void* hostPointer, cl_int mode )
+cl_mem sclMallocCopy(size_t size, void* hostPointer, cl_int mode)
 {
     sclCheckDeviceInitialized();
 
     cl_int err;
-    cl_mem buffer = clCreateBuffer( scl_dev->context, mode | CL_MEM_COPY_HOST_PTR, size, hostPointer, &err );
+    cl_mem buffer = clCreateBuffer(scl_dev->context, mode | CL_MEM_COPY_HOST_PTR, size, hostPointer, &err);
     sclCheckError(err, "clCreateBuffer error in sclMallocCopy: %s\n", sclGetErrorString(err));
-    if ( buffer == NULL ) {
+    if (buffer == NULL) {
         sclPanic("clCreateBuffer error in sclMallocCopy: NULL returned");
     }
     return buffer;
@@ -668,7 +668,7 @@ cl_mem sclCreateSubBuffer(cl_mem buffer, size_t origin, size_t size)
     } region = {origin, size};
     cl_int err;
 
-    cl_mem result = clCreateSubBuffer( buffer, 0, CL_BUFFER_CREATE_TYPE_REGION, &region, &err);
+    cl_mem result = clCreateSubBuffer(buffer, 0, CL_BUFFER_CREATE_TYPE_REGION, &region, &err);
     sclCheckError(err, "clCreateSubBuffer error in sclCreateSubBuffer: %s\n", sclGetErrorString(err));
     return result;
 }
@@ -681,11 +681,11 @@ Frees the memory buffer `buf` that was previously allocated with
 `sclMalloc()` or `sclMallocCopy()`.
 
  ***/
-void sclFree( cl_mem buf )
+void sclFree(cl_mem buf)
 {
     sclCheckDeviceInitialized();
 
-    const cl_int err = clReleaseMemObject( buf );
+    const cl_int err = clReleaseMemObject(buf);
     sclCheckError(err, "clReleaseMemObject in sclFree: %s\n", sclGetErrorString(err));
 }
 
@@ -701,11 +701,11 @@ place later on. However, it is safe to modify the content of the host
 memory block `src` as soon as this function returns.
 
  ***/
-void sclMemcpyHostToDevice( cl_mem dest, const void *src, size_t size )
+void sclMemcpyHostToDevice(cl_mem dest, const void *src, size_t size)
 {
     sclCheckDeviceInitialized();
 
-    const cl_int err = clEnqueueWriteBuffer( scl_dev->queue, dest, CL_TRUE, 0, size, src, 0, NULL, NULL );
+    const cl_int err = clEnqueueWriteBuffer(scl_dev->queue, dest, CL_TRUE, 0, size, src, 0, NULL, NULL);
     sclCheckError(err, "clEnqueueWriteBuffer error in sclMemcpyHostToDevice: %s\n", sclGetErrorString(err));
 }
 
@@ -718,11 +718,11 @@ starting at address `dest`. Upon return, the destination buffer is
 guaranteed to contain the data.
 
  ***/
-void sclMemcpyDeviceToHost( void *dest, const cl_mem src, size_t size )
+void sclMemcpyDeviceToHost(void *dest, const cl_mem src, size_t size)
 {
     sclCheckDeviceInitialized();
 
-    const cl_int err = clEnqueueReadBuffer( scl_dev->queue, src, CL_TRUE, 0, size, dest, 0, NULL, NULL );
+    const cl_int err = clEnqueueReadBuffer(scl_dev->queue, src, CL_TRUE, 0, size, dest, 0, NULL, NULL);
     sclCheckError(err, "clEnqueueReadBuffer error in sclMemcpyDeviceToHost: %s\n", sclGetErrorString(err));
 }
 
@@ -735,11 +735,11 @@ memory buffer `src` to host memory starting at address `dest`. Upon
 return, the destination buffer is guaranteed to contain the data.
 
  ***/
-void sclMemcpyDeviceToHostOffset( void *dest, const cl_mem src, size_t offset, size_t size )
+void sclMemcpyDeviceToHostOffset(void *dest, const cl_mem src, size_t offset, size_t size)
 {
     sclCheckDeviceInitialized();
 
-    const cl_int err = clEnqueueReadBuffer( scl_dev->queue, src, CL_TRUE, offset, size, dest, 0, NULL, NULL );
+    const cl_int err = clEnqueueReadBuffer(scl_dev->queue, src, CL_TRUE, offset, size, dest, 0, NULL, NULL);
     sclCheckError(err, "clEnqueueReadBuffer error in sclMemcpyDeviceToHostOffset: %s\n", sclGetErrorString(err));
 }
 
@@ -752,7 +752,7 @@ containing the value `val`. `val` is converted to `unsigned char`
 before being written, as the standard C function `memset()` does.
 
 ***/
-void sclMemset( cl_mem dest, int val, size_t size )
+void sclMemset(cl_mem dest, int val, size_t size)
 {
     sclCheckDeviceInitialized();
     /* OpenCL 1.2 provides a function clEuqueueFillBuffer for this
@@ -764,7 +764,7 @@ void sclMemset( cl_mem dest, int val, size_t size )
        The proper way would be to query the device for OpenCL 1.2
        support, and use the most appropriate method accordingly. */
 #if 0
-    const unsigned char pattern = (unsigned char)val;
+    const unsigned char pattern = (unsigned char) val;
     const cl_int err = clEnqueueFillBuffer(scl_dev->queue,
                                            dest,
                                            &pattern,
@@ -776,15 +776,14 @@ void sclMemset( cl_mem dest, int val, size_t size )
                                            NULL);
     sclCheckError(err, "clEnqueueFillBuffer error in sclMemset: %s\n", sclGetErrorString(err));
 #else
-    char *buf = (char*)malloc(size); assert(buf != NULL);
-    for (int i=0; i<size; i++)
+    char *buf = (char *) malloc(size);
+    assert(buf != NULL);
+    for (int i = 0; i < size; i++)
         buf[i] = val;
     sclMemcpyHostToDevice(dest, buf, size);
     free(buf);
 #endif
 }
-
-
 
 /******************************************************************************
  **
@@ -802,7 +801,7 @@ void sclMemset( cl_mem dest, int val, size_t size )
 sclDim DIM0(void)
 {
     sclDim result;
-    result.ndims = 0; /* means undefined */
+    result.n_dims = 0; /* means undefined */
     return result;
 }
 
@@ -816,7 +815,7 @@ Returns a new `sclDim` object representing a 1D block of size `x`.
 sclDim DIM1(size_t x)
 {
     sclDim result;
-    result.ndims = 1;
+    result.n_dims = 1;
     result.sizes[0] = x;
     return result;
 }
@@ -832,7 +831,7 @@ by `y`.
 sclDim DIM2(size_t x, size_t y)
 {
     sclDim result;
-    result.ndims = 2;
+    result.n_dims = 2;
     result.sizes[0] = x;
     result.sizes[1] = y;
     return result;
@@ -849,7 +848,7 @@ by `y` by `z`.
 sclDim DIM3(size_t x, size_t y, size_t z)
 {
     sclDim result;
-    result.ndims = 3;
+    result.n_dims = 3;
     result.sizes[0] = x;
     result.sizes[1] = y;
     result.sizes[2] = z;
@@ -861,71 +860,71 @@ sclDim DIM3(size_t x, size_t y, size_t z)
 ## `sclKernel sclCreateKernel(const char *name)`
 
 Return a `sclKernel` object corresponding to function `name`, that
-must be present in the device program loded with `sclInitFromString()`
+must be present in the device program loaded with `sclInitFromString()`
 or `sclInitFromFile()`; function `name` must be declared as a kernel
 (using the `__kernel` or `kernel` keywords).
 
  ***/
-sclKernel sclCreateKernel( const char* name )
+sclKernel sclCreateKernel(const char* name)
 {
     cl_int err;
     sclKernel kern;
 
     strncpy(kern.kernel_name, name, sizeof(kern.kernel_name));
-    kern.kernel = clCreateKernel( scl_dev->program, kern.kernel_name, &err );
+    kern.kernel = clCreateKernel(scl_dev->program, kern.kernel_name, &err);
     sclCheckError(err, "clCrateKernel error in sclCreateKernel for kernel %s: %s\n", name, sclGetErrorString(err));
     return kern;
 }
 
-void sclReleaseKernel( sclKernel kern )
+void sclReleaseKernel(sclKernel kern)
 {
     sclCheckDeviceInitialized();
 
-    const cl_int err = clReleaseKernel( kern.kernel );
+    const cl_int err = clReleaseKernel(kern.kernel);
     sclCheckError(err, "Error in clReleaseKernel called by sclReleaseKernel for kernel %s: %s\n", kern.kernel_name, sclGetErrorString(err));
 }
 
-void sclLaunchKernel( sclKernel kernel,
-                      const sclDim global_work_size,
-                      const sclDim local_work_size )
+void sclLaunchKernel(sclKernel kernel,
+                     const sclDim global_work_size,
+                     const sclDim local_work_size)
 {
     sclCheckDeviceInitialized();
-    assert( ((local_work_size.ndims == 0) && (global_work_size.ndims > 0)) ||
-            (global_work_size.ndims == local_work_size.ndims) );
+    assert(((local_work_size.n_dims == 0) && (global_work_size.n_dims > 0)) ||
+           (global_work_size.n_dims == local_work_size.n_dims));
     const cl_int err =
-            clEnqueueNDRangeKernel( scl_dev->queue,
-                                    kernel.kernel,
-                                    global_work_size.ndims,
-                                    NULL, /* no offset */
-                                    global_work_size.sizes,
-                                    (local_work_size.ndims < 1 ? NULL : local_work_size.sizes),
-                                    0, /* no events in wait list */
-                                    NULL, /* empty wait list */
-                                    NULL );
+            clEnqueueNDRangeKernel(scl_dev->queue,
+                                   kernel.kernel,
+                                   global_work_size.n_dims,
+                                   NULL, /* no offset */
+                                   global_work_size.sizes,
+                                   (local_work_size.n_dims < 1 ? NULL : local_work_size.sizes),
+                                   0, /* no events in wait list */
+                                   NULL, /* empty wait list */
+                                   NULL);
     sclCheckError(err, "clEnqueueNDRangeKernel error in sclLaunchKernel for kernel %s: %s\n", kernel.kernel_name, sclGetErrorString(err));
-    sclDeviceSynchronize( );
+    sclDeviceSynchronize();
     nkernels = 0;
 }
 
-void sclEnqueueKernel( sclKernel kernel,
-                       const sclDim global_work_size,
-                       const sclDim local_work_size )
+void sclEnqueueKernel(sclKernel kernel,
+                      const sclDim global_work_size,
+                      const sclDim local_work_size)
 {
     static const int SYNC_EVERY = 100; /* after how many operations to force a flush of the command queue */
     sclCheckDeviceInitialized();
 
-    assert( ((local_work_size.ndims == 0) && (global_work_size.ndims > 0)) ||
-            (global_work_size.ndims == local_work_size.ndims) );
+    assert(((local_work_size.n_dims == 0) && (global_work_size.n_dims > 0)) ||
+           (global_work_size.n_dims == local_work_size.n_dims));
     const cl_int err =
-        clEnqueueNDRangeKernel( scl_dev->queue,
-                                kernel.kernel,
-                                global_work_size.ndims,
-                                NULL, /* no offset */
-                                global_work_size.sizes,
-                                (local_work_size.ndims < 1 ? NULL : local_work_size.sizes),
-                                0, /* no events in wait list */
-                                NULL, /* empty wait list */
-                                NULL );
+        clEnqueueNDRangeKernel(scl_dev->queue,
+                               kernel.kernel,
+                               global_work_size.n_dims,
+                               NULL, /* no offset */
+                               global_work_size.sizes,
+                               (local_work_size.n_dims < 1 ? NULL : local_work_size.sizes),
+                               0, /* no events in wait list */
+                               NULL, /* empty wait list */
+                               NULL);
     sclCheckError(err, "clEnqueueNDRangeKernel error in sclEnqueueKernel for kernel %s: %s\n", kernel.kernel_name, sclGetErrorString(err));
     nkernels++;
     if (nkernels >= SYNC_EVERY) {
@@ -934,15 +933,15 @@ void sclEnqueueKernel( sclKernel kernel,
     }
 }
 
-void sclSetKernelArg( sclKernel kernel, int argnum, size_t typeSize, void *argument )
+void sclSetKernelArg(sclKernel kernel, int argnum, size_t typeSize, void *argument)
 {
     sclCheckDeviceInitialized();
 
-    const cl_int err = clSetKernelArg( kernel.kernel, argnum, typeSize, argument );
+    const cl_int err = clSetKernelArg(kernel.kernel, argnum, typeSize, argument);
     sclCheckError(err, "clSetKernelArg error in sclSetKernelArg number %d for kernel %s: %s\n", argnum, kernel.kernel_name, sclGetErrorString(err));
 }
 
-static void _sclVSetKernelArgs( sclKernel kernel, const char *fmt, va_list argList )
+static void _sclVSetKernelArgs(sclKernel kernel, const char *fmt, va_list argList)
 {
     int arg_count = 0;
     void* argument;
@@ -956,37 +955,37 @@ static void _sclVSetKernelArgs( sclKernel kernel, const char *fmt, va_list argLi
     if (fmt == NULL)
         return;
 
-    for( const char *p = fmt; *p != '\0'; p++ ) {
-        if ( *p == SCL_SEPARATOR ) {
-            switch( *++p ) {
+    for(const char *p = fmt; *p != '\0'; p++) {
+        if (*p == SCL_SEPARATOR) {
+            switch(*++p) {
             case SCL_VALUE:
-                actual_size = va_arg( argList, size_t );
-                argument = va_arg( argList, void* );
+                actual_size = va_arg(argList, size_t);
+                argument = va_arg(argList, void *);
                 sclSetKernelArg(kernel, arg_count, actual_size, argument);
                 arg_count++;
                 break;
             case SCL_BUFFER:
                 mem_arg = va_arg(argList, cl_mem);
-                sclSetKernelArg(kernel, arg_count, sizeof(cl_mem), (void*)&mem_arg);
+                sclSetKernelArg(kernel, arg_count, sizeof(cl_mem), (void *) &mem_arg);
                 arg_count++;
                 break;
             case SCL_LOCALMEM:
-                actual_size = va_arg( argList, size_t );
+                actual_size = va_arg(argList, size_t);
                 sclSetKernelArg(kernel, arg_count, actual_size, NULL);
                 arg_count++;
                 break;
             case SCL_INT:
-                int_arg = va_arg( argList, int );
+                int_arg = va_arg(argList, int);
                 sclSetKernelArg(kernel, arg_count, sizeof(int), &int_arg);
                 arg_count++;
                 break;
             case SCL_LONG:
-                long_arg = va_arg( argList, long );
+                long_arg = va_arg(argList, long);
                 sclSetKernelArg(kernel, arg_count, sizeof(long), &long_arg);
                 arg_count++;
                 break;
             case SCL_FLOAT:
-                float_arg = (float)va_arg( argList, double ); /* floats are promoted to double when passed through ... */
+                float_arg = (float) va_arg(argList, double); /* floats are promoted to double when passed through ... */
                 sclSetKernelArg(kernel, arg_count, sizeof(float), &float_arg);
                 arg_count++;
                 break;
@@ -999,12 +998,12 @@ static void _sclVSetKernelArgs( sclKernel kernel, const char *fmt, va_list argLi
     }
 }
 
-void sclSetKernelArgs( sclKernel kernel, const char *fmt, ... )
+void sclSetKernelArgs(sclKernel kernel, const char *fmt, ...)
 {
     va_list argList;
-    va_start( argList, fmt );
-    _sclVSetKernelArgs( kernel, fmt, argList );
-    va_end( argList );
+    va_start(argList, fmt);
+    _sclVSetKernelArgs(kernel, fmt, argList);
+    va_end(argList);
 }
 
 /***
@@ -1012,10 +1011,10 @@ void sclSetKernelArgs( sclKernel kernel, const char *fmt, ... )
 ### Interface
 
 ```C
-void sclSetArgsLaunchKernel( sclKernel kernel,
-                             const sclDim global_work_size,
-                             const sclDim local_work_size,
-                             const char *fmt, ... )
+void sclSetArgsLaunchKernel(sclKernel kernel,
+                            const sclDim global_work_size,
+                            const sclDim local_work_size,
+                            const char *fmt, ...)
 ```
 
 ### Parameters
@@ -1072,25 +1071,25 @@ since 128 is not an integer multiple of 112.
 ### Example
 
  ***/
-void sclSetArgsLaunchKernel( sclKernel kernel,
-                             const sclDim global_work_size,
-                             const sclDim local_work_size,
-                             const char *fmt, ... )
+void sclSetArgsLaunchKernel(sclKernel kernel,
+                            const sclDim global_work_size,
+                            const sclDim local_work_size,
+                            const char *fmt, ...)
 {
     va_list argList;
-    va_start( argList, fmt );
-    _sclVSetKernelArgs( kernel, fmt, argList );
-    va_end( argList );
-    sclLaunchKernel( kernel, global_work_size, local_work_size );
+    va_start(argList, fmt);
+    _sclVSetKernelArgs(kernel, fmt, argList);
+    va_end(argList);
+    sclLaunchKernel(kernel, global_work_size, local_work_size);
 }
 
 /***
 
 ```C
-void sclSetArgsEnqueueKernel( sclKernel kernel,
-                              const sclDim global_work_size,
-                              const sclDim local_work_size,
-                              const char *fmt, ... )
+void sclSetArgsEnqueueKernel(sclKernel kernel,
+                             const sclDim global_work_size,
+                             const sclDim local_work_size,
+                             const char *fmt, ...)
 ```
 
 Enqueue a kernel execution. Parameters are the same as
@@ -1102,19 +1101,17 @@ Enqueue a kernel execution. Parameters are the same as
 > after asynchronous kernel launches.
 
  ***/
-void sclSetArgsEnqueueKernel( sclKernel kernel,
-                              const sclDim global_work_size,
-                              const sclDim local_work_size,
-                              const char *fmt, ... )
+void sclSetArgsEnqueueKernel(sclKernel kernel,
+                             const sclDim global_work_size,
+                             const sclDim local_work_size,
+                             const char *fmt, ...)
 {
     va_list argList;
-    va_start( argList, fmt );
-    _sclVSetKernelArgs( kernel, fmt, argList );
-    va_end( argList );
-    sclEnqueueKernel( kernel, global_work_size, local_work_size );
+    va_start(argList, fmt);
+    _sclVSetKernelArgs(kernel, fmt, argList);
+    va_end(argList);
+    sclEnqueueKernel(kernel, global_work_size, local_work_size);
 }
-
-
 
 /******************************************************************************
  **
@@ -1122,32 +1119,32 @@ void sclSetArgsEnqueueKernel( sclKernel kernel,
  **
  ******************************************************************************/
 
-void sclPrintHardwareStatus( void )
+void sclPrintHardwareStatus(void)
 {
     char platform[MAX_STR_LEN];
     cl_bool deviceAV;
     cl_int err;
 
     sclCheckDeviceInitialized();
-    err = clGetPlatformInfo( scl_dev->platform_id,
-                             CL_PLATFORM_NAME,
-                             sizeof(platform),
-                             platform,
-                             NULL );
-    if ( err == CL_SUCCESS ) {
+    err = clGetPlatformInfo(scl_dev->platform_id,
+                            CL_PLATFORM_NAME,
+                            sizeof(platform),
+                            platform,
+                            NULL);
+    if (err == CL_SUCCESS) {
         fprintf(stderr, "Platform object alive\n");
     } else {
         fprintf(stderr, "%s\n", sclGetErrorString(err));
     }
 
-    err = clGetDeviceInfo( scl_dev->device_id,
-                           CL_DEVICE_AVAILABLE,
-                           sizeof(cl_bool),
-                           (void*)(&deviceAV),
-                           NULL );
-    if ( err == CL_SUCCESS && deviceAV ) {
+    err = clGetDeviceInfo(scl_dev->device_id,
+                          CL_DEVICE_AVAILABLE,
+                          sizeof(cl_bool),
+                          (void *) (&deviceAV),
+                          NULL);
+    if (err == CL_SUCCESS && deviceAV) {
         fprintf(stderr, "Device object alive and device available\n");
-    } else if ( err == CL_SUCCESS ) {
+    } else if (err == CL_SUCCESS) {
         fprintf(stderr, "Device object alive and device NOT available\n");
     } else {
         fprintf(stderr, "Device object not alive\n");
@@ -1159,11 +1156,11 @@ void sclPrintHardwareStatus( void )
 Wait for completion of all pending commands.
 
  ***/
-cl_int sclDeviceSynchronize( void )
+cl_int sclDeviceSynchronize(void)
 {
     sclCheckDeviceInitialized();
 
-    const cl_int err = clFinish( scl_dev->queue );
+    const cl_int err = clFinish(scl_dev->queue);
     sclCheckError(err, "clFinish error in sclDeviceSynchronize: %s\n", sclGetErrorString(err));
     return err;
 }
@@ -1171,9 +1168,9 @@ cl_int sclDeviceSynchronize( void )
 /***
 
 Return the lowest integer multiple of `m` that is greater than or
-equal to `s`. For example, if `s=13, m=5` this function returns `15`,
+equal to `s`. For example, if `s = 13, m = 5` this function returns `15`,
 which is the lowest multiple of `5` that is greater than or equal to
-`13`. If `s=18, m=6` this function returns `18`, which is already an
+`13`. If `s = 18, m = 6` this function returns `18`, which is already an
 integer multiple of `6`.
 
 The function is useful when computing the size of a global grid as the
@@ -1183,7 +1180,7 @@ as the input.
  ***/
 size_t sclRoundUp(size_t s, size_t m)
 {
-    return ((s+m-1)/m)*m;
+    return ((s + m - 1) / m) * m;
 }
 
 void sclWGSetup1D(size_t xsize, sclDim *grid, sclDim *block)
@@ -1192,17 +1189,17 @@ void sclWGSetup1D(size_t xsize, sclDim *grid, sclDim *block)
     *grid = DIM1(sclRoundUp(xsize, SCL_DEFAULT_WG_SIZE));
 }
 
-void sclWGSetup2D(size_t xsize, size_t ysize, sclDim *grid, sclDim *block)
+void sclWGSetup2D(size_t xsize, size_t y_size, sclDim *grid, sclDim *block)
 {
     *block = DIM2(SCL_DEFAULT_WG_SIZE2D, SCL_DEFAULT_WG_SIZE2D);
     *grid = DIM2(sclRoundUp(xsize, SCL_DEFAULT_WG_SIZE2D),
-                 sclRoundUp(ysize, SCL_DEFAULT_WG_SIZE2D));
+                 sclRoundUp(y_size, SCL_DEFAULT_WG_SIZE2D));
 }
 
-void sclWGSetup3D(size_t xsize, size_t ysize, size_t zsize, sclDim *grid, sclDim *block)
+void sclWGSetup3D(size_t xsize, size_t y_size, size_t z_size, sclDim *grid, sclDim *block)
 {
     *block = DIM3(SCL_DEFAULT_WG_SIZE3D, SCL_DEFAULT_WG_SIZE3D, SCL_DEFAULT_WG_SIZE3D);
     *grid = DIM3(sclRoundUp(xsize, SCL_DEFAULT_WG_SIZE3D),
-                 sclRoundUp(ysize, SCL_DEFAULT_WG_SIZE3D),
-                 sclRoundUp(zsize, SCL_DEFAULT_WG_SIZE3D));
+                 sclRoundUp(y_size, SCL_DEFAULT_WG_SIZE3D),
+                 sclRoundUp(z_size, SCL_DEFAULT_WG_SIZE3D));
 }

@@ -22,6 +22,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  ****************************************************************************/
+
 #ifndef SIMPLECL_H
 #define SIMPLECL_H
 
@@ -49,7 +50,7 @@ typedef struct {
 } sclKernel;
 
 typedef struct {
-    int ndims;
+    int n_dims;
     size_t sizes[3];
 } sclDim;
 
@@ -74,19 +75,19 @@ extern size_t SCL_DEFAULT_WG_SIZE3D;
  * This function must be called before any other call to other scl
  * functions.
  */
-void sclInitFromString( const char *source );
+void sclInitFromString(const char *source);
 
 /**
  * Compile the program whose source code is in the file `filename`
  */
-void sclInitFromFile(const char *filename );
+void sclInitFromFile(const char *filename);
 
 /**
  * Shuts down the OpenCL device and frees all resources acquired by
  * this program. This is normally the last function that is called
  * before the program terminates.
  */
-void sclFinalize( void );
+void sclFinalize(void);
 
 /******************************************************************************
  **
@@ -107,21 +108,21 @@ void sclFinalize( void );
  * CL_MEM_READ_ONLY : the memory object will be read by a kernel
  *
  */
-cl_mem sclMalloc( size_t size, cl_int mode );
+cl_mem sclMalloc(size_t size, cl_int mode);
 
 /**
  * Allocate a block of `size` bytes in device memory, and fill the
  * block with a copy of host memory from `hostPointer`. See
  * `sclMalloc()` for the meaning of `mode`.
  */
-cl_mem sclMallocCopy( size_t size, void* hostPointer, cl_int mode );
+cl_mem sclMallocCopy(size_t size, void* hostPointer, cl_int mode);
 
 /**
  * Copy `size` bytes from `src` on device to `dest` on host.  This is
  * a _blocking_ operation: when this function returns, the caller has
  * the guarantee that the data is in the `dest` buffer.
  */
-void sclMemcpyDeviceToHost( void *dest, const cl_mem src, size_t size);
+void sclMemcpyDeviceToHost(void *dest, const cl_mem src, size_t size);
 
 /**
  * Copy `size` bytes beginning from `offset` for device buffer `src`
@@ -129,7 +130,7 @@ void sclMemcpyDeviceToHost( void *dest, const cl_mem src, size_t size);
  * this function returns, the caller has the guarantee that the data
  * is in the `dest` buffer.
  */
-void sclMemcpyDeviceToHostOffset( void *dest, const cl_mem src, size_t offset, size_t size);
+void sclMemcpyDeviceToHostOffset(void *dest, const cl_mem src, size_t offset, size_t size);
 
 /**
  * Copy `size` bytes from `src` on host to `dest` on device.  When
@@ -138,14 +139,14 @@ void sclMemcpyDeviceToHostOffset( void *dest, const cl_mem src, size_t offset, s
  * been moved to the device (it might have been buffered internally by
  * the OpenCL implementation).
  */
-void sclMemcpyHostToDevice( cl_mem dest, const void *src, size_t size);
+void sclMemcpyHostToDevice(cl_mem dest, const void *src, size_t size);
 
-void sclMemset( cl_mem dest, int val, size_t size );
+void sclMemset(cl_mem dest, int val, size_t size);
 
 /**
  * Release the memory object `buff`
  */
-void sclFree( cl_mem buff );
+void sclFree(cl_mem buff);
 
 /******************************************************************************
  **
@@ -164,12 +165,12 @@ sclDim DIM3(size_t x, size_t y, size_t z);
  * parameter to `sclInit()`), and must be defined as `__global` so
  * that it is callable from the host.
  */
-sclKernel sclCreateKernel( const char* name );
+sclKernel sclCreateKernel(const char *name);
 
 /**
  * Releases a kernel object.
  */
-void sclReleaseKernel( sclKernel soft );
+void sclReleaseKernel(sclKernel soft);
 
 /**
  * Launch a kernel. This function returns when execution completes
@@ -181,13 +182,13 @@ void sclReleaseKernel( sclKernel soft );
  * `global_work_size`
  * `local_work_size`
  */
-void sclLaunchKernel( sclKernel kernel, const sclDim global_work_size, const sclDim local_work_size );
+void sclLaunchKernel(sclKernel kernel, const sclDim global_work_size, const sclDim local_work_size);
 
-void sclEnqueueKernel( sclKernel kernel, const sclDim global_work_size, const sclDim local_work_size );
+void sclEnqueueKernel(sclKernel kernel, const sclDim global_work_size, const sclDim local_work_size);
 
-void sclSetArgsLaunchKernel( sclKernel kernel, const sclDim global_work_size, const sclDim local_work_size, const char* fmt, ... );
+void sclSetArgsLaunchKernel(sclKernel kernel, const sclDim global_work_size, const sclDim local_work_size, const char *fmt, ...);
 
-void sclSetArgsEnqueueKernel( sclKernel kernel, const sclDim global_work_size, const sclDim local_work_size, const char* fmt, ... );
+void sclSetArgsEnqueueKernel(sclKernel kernel, const sclDim global_work_size, const sclDim local_work_size, const char *fmt, ...);
 
 /******************************************************************************
  **
@@ -198,21 +199,21 @@ void sclSetArgsEnqueueKernel( sclKernel kernel, const sclDim global_work_size, c
 /**
  * Wait for completion of all pending operations on the queue.
  */
-cl_int sclDeviceSynchronize( void );
+cl_int sclDeviceSynchronize(void);
 
 /**
  * Print hardware status
  */
-void sclPrintHardwareStatus( void );
+void sclPrintHardwareStatus(void);
 
-const char *sclGetErrorString( cl_int err );
+const char *sclGetErrorString(cl_int err);
 
 size_t sclRoundUp(size_t s, size_t m);
 
 void sclWGSetup1D(size_t xsize, sclDim *grid, sclDim *block);
 
-void sclWGSetup2D(size_t xsize, size_t ysize, sclDim *grid, sclDim *block);
+void sclWGSetup2D(size_t xsize, size_t y_size, sclDim *grid, sclDim *block);
 
-void sclWGSetup3D(size_t xsize, size_t ysize, size_t zsize, sclDim *grid, sclDim *block);
+void sclWGSetup3D(size_t xsize, size_t y_size, size_t z_size, sclDim *grid, sclDim *block);
 
 #endif
