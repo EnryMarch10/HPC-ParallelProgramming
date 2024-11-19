@@ -3,12 +3,14 @@ SHELL = /bin/bash
 LAB1 := lab1
 LAB2 := lab2
 LAB3 := lab3
+LAB4 := lab4
 
-LABS := $(LAB1) $(LAB2) $(LAB3)
+LABS := $(LAB1) $(LAB2) $(LAB3) $(LAB4)
 
 DIR_LAB1 := 01_OpenMP-1
 DIR_LAB2 := 02_OpenMP-2
 DIR_LAB3 := 03_MPI-1
+DIR_LAB4 := 04_MPI-2
 
 all: $(LABS)
 
@@ -20,6 +22,7 @@ help:
 	@echo "     lab1    compile all lab1 programs (OpenMP-1)"
 	@echo "     lab2    compile all lab2 programs (OpenMP-2)"
 	@echo "     lab3    compile all lab3 programs (MPI-1)"
+	@echo "     lab4    compile all lab4 programs (MPI-2)"
 	@echo "      all    compile everything (default)"
 	@echo "    clean    cleanup temporary files"
 	@echo
@@ -48,6 +51,15 @@ $(LAB3):
 		fi;\
 	done
 
+$(LAB4):
+	@echo "*** TARGET - $(LAB4) ***"
+	for TARGET in `find ./$(DIR_LAB4) -mindepth 1 -maxdepth 1 -type d -print`; do\
+		if ! make -C "$$TARGET"; then\
+			exit $$?;\
+		fi;\
+	done
+
+
 clean:
 	@echo "*** TARGET - $(LAB1) ***"
 	for TARGET in `find ./$(DIR_LAB1) -mindepth 1 -maxdepth 1 -type d -print`; do\
@@ -63,6 +75,12 @@ clean:
 	done
 	@echo "*** TARGET - $(LAB3) ***"
 	for TARGET in `find ./$(DIR_LAB3) -mindepth 1 -maxdepth 1 -type d -print`; do\
+		if ! make -C "$$TARGET" clean; then\
+			exit $$?;\
+		fi;\
+	done
+	@echo "*** TARGET - $(LAB4) ***"
+	for TARGET in `find ./$(DIR_LAB4) -mindepth 1 -maxdepth 1 -type d -print`; do\
 		if ! make -C "$$TARGET" clean; then\
 			exit $$?;\
 		fi;\
