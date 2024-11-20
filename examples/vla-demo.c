@@ -27,38 +27,39 @@
  *      ./vla-demo
  *
  ****************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 
-void identity_mat( int *mat, size_t n )
+void identity_mat(int *mat, size_t n)
 {
     /* mat_m is a pointer to an array[n] of integers */
-    int (*mat_m)[n] = (int (*)[n])mat;
+    int (*mat_m)[n] = (int (*)[n]) mat;
     size_t i, j;
-    for (i=0; i<n; i++) {
-        for (j=0; j<n; j++) {
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < n; j++) {
             mat_m[i][j] = (i == j ? 1 : 0); /* un po' ridondante, ma comprensibile */
         }
     }
 }
 
-void print_mat( const int *mat, size_t n )
+void print_mat(const int *mat, size_t n)
 {
     /* mat_m is a pointer to an array[n] of (constant) integers */
-    const int (*mat_m)[n] = (const int (*)[n])mat;
+    const int (*mat_m)[n] = (const int (*)[n]) mat;
     size_t i, j;
-    for (i=0; i<n; i++) {
-        for (j=0; j<n; j++) {
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < n; j++) {
             printf("%d\t", mat_m[i][j]);
         }
         printf("\n");
     }
 }
 
-int main( void )
+int main(void)
 {
     const size_t n = 8;
-    int *m = (int*)malloc(n*n*sizeof(int));
+    int *m = (int *) malloc(n * n * sizeof(int));
     identity_mat(m, n);
     print_mat(m, n);
     free(m);

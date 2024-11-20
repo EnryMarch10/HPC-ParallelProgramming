@@ -65,7 +65,7 @@ typedef struct {
  * Read a PGM file from `f`. This function is not very robust; it may
  * fail on valid PGM images.
  */
-void read_pgm( FILE *f, img_t* img )
+void read_pgm(FILE *f, img_t *img)
 {
     char buf[2048];
     const size_t BUFSIZE = sizeof(buf);
@@ -74,7 +74,7 @@ void read_pgm( FILE *f, img_t* img )
 
     /* Get the file type (must be "P5") */
     s = fgets(buf, BUFSIZE, f);
-    if (0 != strcmp(s, "P5\n")) {
+    if (strcmp(s, "P5\n") != 0) {
         fprintf(stderr, "FATAL: wrong file type %s\n", buf);
         exit(EXIT_FAILURE);
     }
@@ -88,15 +88,15 @@ void read_pgm( FILE *f, img_t* img )
     /* get maxgrey; must be less than or equal to 255 */
     s = fgets(buf, BUFSIZE, f);
     sscanf(s, "%d", &(img->maxgrey));
-    if ( img->maxgrey > 255 ) {
+    if (img->maxgrey > 255) {
         fprintf(stderr, "FATAL: maxgray > 255 (%d)\n", img->maxgrey);
         exit(EXIT_FAILURE);
     }
     /* Get the binary data */
-    img->bmap = (unsigned char*)malloc((img->width)*(img->height));
-    nread = fread(img->bmap, 1, (img->width)*(img->height), f);
-    if ( (img->width)*(img->height) != nread ) {
-        fprintf(stderr, "FATAL: error reading input: expecting %d bytes, got %d\n", (img->width)*(img->height), nread);
+    img->bmap = (unsigned char *) malloc(img->width * img->height);
+    nread = fread(img->bmap, 1, img->width * img->height, f);
+    if (img->width * img->height != nread) {
+        fprintf(stderr, "FATAL: error reading input: expecting %d bytes, got %d\n", img->width * img->height, nread);
         exit(EXIT_FAILURE);
     }
 }
@@ -104,46 +104,46 @@ void read_pgm( FILE *f, img_t* img )
 /**
  * Write image `img` to `f`
  */
-void write_pgm( FILE *f, const img_t* img )
+void write_pgm(FILE *f, const img_t *img)
 {
     fprintf(f, "P5\n");
     fprintf(f, "# produced by opencl-image-rotate.c\n");
     fprintf(f, "%d %d\n", img->width, img->height);
     fprintf(f, "%d\n", img->maxgrey);
-    fwrite(img->bmap, 1, (img->width)*(img->height), f);
+    fwrite(img->bmap, 1, img->width * img->height, f);
 }
 
 /**
  * Free the memory allocated by image `img`, and set the additional
  * info to invalid values.
  */
-void free_pgm( img_t *img )
+void free_pgm(img_t *img)
 {
     img->width = img->height = img->maxgrey = -1;
     free(img->bmap);
     img->bmap = NULL;
 }
 
-int main( int argc, char* argv[] )
+int main(int argc, char *argv[])
 {
     sclInitFromFile("opencl-image-rotate.cl");
 
     img_t img;
     cl_mem d_orig, d_new, tmp;
-    int nrotations = 1001;
+    int n_rotations = 1001;
 
-    if ( argc > 2 ) {
-        fprintf(stderr, "Usage: %s nrotations < input > output\n", argv[0]);
+    if (argc > 2) {
+        fprintf(stderr, "Usage: %s n_rotations < input > output\n", argv[0]);
         return EXIT_FAILURE;
     }
 
     if (argc > 1) {
-        nrotations = atoi(argv[1]);
+        n_rotations = atoi(argv[1]);
     }
 
     read_pgm(stdin, &img);
 
-    if ( img.width != img.height ) {
+    if (img.width != img.height) {
         fprintf(stderr, "FATAL: width (%d) and height (%d) of the input image must be equal\n", img.width, img.height);
         return EXIT_FAILURE;
     }
@@ -151,7 +151,7 @@ int main( int argc, char* argv[] )
     const int n = img.width;
 
     if (n % SCL_DEFAULT_WG_SIZE2D != 0) {
-        fprintf(stderr, "FATAL: width/height (%d) must be a multiple of %d\n", n, (int)SCL_DEFAULT_WG_SIZE2D);
+        fprintf(stderr, "FATAL: width/height (%d) must be a multiple of %d\n", n, (int) SCL_DEFAULT_WG_SIZE2D);
         return EXIT_FAILURE;
     }
 
@@ -159,28 +159,29 @@ int main( int argc, char* argv[] )
     sclKernel rotate_kernel_shared = sclCreateKernel("rotate_kernel_shared");
 
     /* Allocate buffers on the device */
-    const size_t size = n*n;
+    const size_t size = n * n;
     d_orig = sclMallocCopy(size, img.bmap, CL_MEM_READ_WRITE);
     d_new = sclMalloc(size, CL_MEM_READ_WRITE);
 
     /* Define block and grid sizes */
     const sclDim block = DIM2(SCL_DEFAULT_WG_SIZE2D, SCL_DEFAULT_WG_SIZE2D);
-    const sclDim grid = DIM2(sclRoundUp(img.width, SCL_DEFAULT_WG_SIZE2D),
-                             sclRoundUp(img.height, SCL_DEFAULT_WG_SIZE2D));
+    const sclDim grid = DIM2(sclRoundUp(img.width, SCL_DEFAULT_WG_SIZE2D), sclRoundUp(img.height, SCL_DEFAULT_WG_SIZE2D));
 
-    fprintf(stderr, "\nPerforming %d rotations (img size %dx%d)\n\n", nrotations, img.width, img.height);
+    fprintf(stderr, "\nPerforming %d rotations (img size %dx%d)\n\n", n_rotations, img.width, img.height);
 
     double tstart = hpc_gettime();
-    for (int i=0; i<nrotations; i++) {
+    for (int i = 0; i < n_rotations; i++) {
         sclSetArgsEnqueueKernel(rotate_kernel,
                                 grid, block,
                                 ":b :b :d",
                                 d_orig, d_new, n);
-        tmp = d_orig; d_orig = d_new; d_new = tmp;
+        tmp = d_orig;
+        d_orig = d_new;
+        d_new = tmp;
     }
     sclDeviceSynchronize();
     const double elapsed_noshmem = hpc_gettime() - tstart;
-    const double Mpixels = ((double)img.width * img.height * nrotations)/1.0e6;
+    const double Mpixels = ((double) img.width * img.height * n_rotations) / 1.0e6;
     fprintf(stderr, "No shmem: elapsed time %.2f s = %.2f Mpixels/s\n", elapsed_noshmem,
             Mpixels/elapsed_noshmem);
 
@@ -190,17 +191,18 @@ int main( int argc, char* argv[] )
     sclMemcpyHostToDevice(d_orig, img.bmap, size);
 
     tstart = hpc_gettime();
-    for (int i=0; i<nrotations; i++) {
+    for (int i = 0; i < n_rotations; i++) {
         sclSetArgsEnqueueKernel(rotate_kernel_shared,
                                 grid, block,
                                 ":b :b :d",
                                 d_orig, d_new, n);
-        tmp = d_orig; d_orig = d_new; d_new = tmp;
+        tmp = d_orig;
+        d_orig = d_new;
+        d_new = tmp;
     }
     sclDeviceSynchronize();
     const double elapsed_shmem = hpc_gettime() - tstart;
-    fprintf(stderr, "Shmem   : elapsed time %.2f s = %.2f Mpixels/s\n", elapsed_shmem,
-            Mpixels/elapsed_shmem);
+    fprintf(stderr, "Shmem   : elapsed time %.2f s = %.2f Mpixels/s\n", elapsed_shmem, Mpixels / elapsed_shmem);
 
     /* Copy output to host */
     sclMemcpyDeviceToHost(img.bmap, d_orig, size);

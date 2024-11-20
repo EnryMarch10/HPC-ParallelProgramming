@@ -40,7 +40,7 @@
 float vsum(float *v, int n)
 {
     float s = 0.0;
-    for (int i=0; i<n; i++) {
+    for (int i = 0; i < n; i++) {
         s += v[i];
     }
     return s;
@@ -48,25 +48,25 @@ float vsum(float *v, int n)
 
 void fill(float *v, int n)
 {
-    for (int i=0; i<n; i++) {
-        v[i] = i%10;
+    for (int i = 0; i < n; i++) {
+        v[i] = i % 10;
     }
 }
 
-int main( int argc, char *argv[] )
+int main(int argc, char *argv[])
 {
     float *vec;
     int n = 1024;
 
-    if ( argc > 2 ) {
+    if (argc > 2) {
         fprintf(stderr, "Usage: %s [n]\n", argv[0]);
         return EXIT_FAILURE;
     }
 
-    if ( argc > 1 ) {
+    if (argc > 1) {
         n = atoi(argv[1]);
     }
-    vec = (float*)malloc(n*sizeof(*vec));
+    vec = (float *) malloc(n * sizeof(*vec));
     fill(vec, n);
     printf("sum = %f\n", vsum(vec, n));
     free(vec);

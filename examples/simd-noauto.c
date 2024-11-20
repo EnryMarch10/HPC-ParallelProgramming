@@ -23,7 +23,7 @@
 float vec[SIZE];
 
 typedef float v4f __attribute__((vector_size(16)));
-#define VLEN (sizeof(v4f)/sizeof(float))
+#define VLEN (sizeof(v4f) / sizeof(float))
 
 float f(int n)
 {
@@ -31,8 +31,8 @@ float f(int n)
     float x = 0.0;
     float s = 0.0;
     const float delta = 0.1;
-    for (i=1; i<n; i++) {
-        s += x*x;
+    for (i = 1; i < n; i++) {
+        s += x * x;
         x += delta;
     }
     return s; /* unused */
@@ -41,12 +41,12 @@ float f(int n)
 void init(float *v, int n)
 {
     int i;
-    for (i=0; i<n; i++) {
-        v[i] = (float)i / n;
+    for (i = 0; i < n; i++) {
+        v[i] = (float) i / n;
     }
 }
 
-int main( void )
+int main(void)
 {
     init(vec, SIZE);
     printf("%f\n", f(SIZE));

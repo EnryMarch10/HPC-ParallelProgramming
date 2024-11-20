@@ -58,22 +58,22 @@
 #include "hpc.h"
 
 /* if *a > *b, swap them. Otherwise do nothing */
-void cmp_and_swap( int* a, int* b )
+void cmp_and_swap(int *a, int *b)
 {
-    if ( *a > *b ) {
-	const int tmp = *a;
-	*a = *b;
-	*b = tmp;
+    if (*a > *b) {
+        const int tmp = *a;
+        *a = *b;
+        *b = tmp;
     }
 }
 
 /* Fills vector v with a permutation of the integer values 0, .. n-1 */
-void fill( int* v, int n )
+void fill(int *v, int n)
 {
     int i;
     int up = n-1, down = 0;
-    for ( i=0; i<n; i++ ) {
-	v[i] = ( i % 2 == 0 ? up-- : down++ );
+    for (i = 0; i < n; i++) {
+    v[i] = (i % 2 == 0 ? up-- : down++);
     }
 }
 
@@ -83,47 +83,47 @@ void odd_even_sort( int* v, int n )
     int phase, i;
     const double tstart = hpc_gettime();
     for (phase = 0; phase < n; phase++) {
-	if ( phase % 2 == 0 ) {
-	    /* (even, odd) comparisons */
-	    for (i=0; i<n-1; i += 2 ) {
-		cmp_and_swap( &v[i], &v[i+1] );
-	    }
-	} else {
-	    /* (odd, even) comparisons */
-	    for (i=1; i<n-1; i += 2 ) {
-		cmp_and_swap( &v[i], &v[i+1] );
-	    }
-	}
+        if (phase % 2 == 0) {
+            /* (even, odd) comparisons */
+            for (i = 0; i < n - 1; i += 2) {
+                cmp_and_swap(&v[i], &v[i + 1]);
+            }
+        } else {
+            /* (odd, even) comparisons */
+            for (i = 1; i < n - 1; i += 2) {
+                cmp_and_swap(&v[i], &v[i + 1]);
+            }
+        }
     }
     const double elapsed = hpc_gettime() - tstart;
     printf("Sorting time %.2f\n", elapsed);
 }
 
-void check( int* v, int n )
+void check(int *v, int n)
 {
     int i;
-    for (i=0; i<n-1; i++) {
-	if ( v[i] != i ) {
-	    fprintf(stderr, "Check failed: v[%d]=%d, expected %d\n",
-		    i, v[i], i );
-	    abort();
-	}
+    for (i = 0; i < n - 1; i++) {
+    if (v[i] != i) {
+        fprintf(stderr, "Check failed: v[%d]=%d, expected %d\n", i, v[i], i );
+        abort();
+    }
     }
     printf("Check ok!\n");
 }
 
-int main( int argc, char* argv[] )
+int main(int argc, char *argv[])
 {
     int n = 50000;
     int* v;
 
-    if ( argc > 1 ) {
+    if (argc > 1) {
         n = atoi(argv[1]);
     }
-    v = (int*)malloc(n*sizeof(v[0])); assert(v);
-    fill(v,n);
-    odd_even_sort(v,n);
-    check(v,n);
+    v = (int *) malloc(n * sizeof(v[0]));
+    assert(v);
+    fill(v, n);
+    odd_even_sort(v, n);
+    check(v, n);
     free(v);
     return EXIT_SUCCESS;
 }

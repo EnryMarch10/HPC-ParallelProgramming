@@ -40,15 +40,15 @@
 #include <assert.h>
 #include "simpleCL.h"
 
-void init( int *v, int n )
+void init(int *v, int n)
 {
     int i;
-    for (i=0; i<n; i++) {
+    for (i = 0; i < n; i++) {
         v[i] = 2;
     }
 }
 
-int main( int argc, char *argv[] )
+int main(int argc, char *argv[])
 {
     sclInitFromFile("opencl-reduction2.cl");
 
@@ -56,19 +56,21 @@ int main( int argc, char *argv[] )
     cl_mem d_a, d_out;
     int n = 8192;
 
-    assert( (SCL_DEFAULT_WG_SIZE & (SCL_DEFAULT_WG_SIZE-1)) == 0 ); /* check if the default group size is a power of two using the "bit hack" from http://www.graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2 */
+    assert((SCL_DEFAULT_WG_SIZE & (SCL_DEFAULT_WG_SIZE-1)) == 0); /* check if the default group size is a power of two using the "bit hack" from http://www.graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2 */
 
-    if ( argc > 1 ) {
+    if (argc > 1) {
         n = atoi(argv[1]);
     }
 
     const size_t SIZE = n * sizeof(*h_a);
-    const int N_OF_GROUPS = (n + SCL_DEFAULT_WG_SIZE - 1)/SCL_DEFAULT_WG_SIZE;
+    const int N_OF_GROUPS = (n + SCL_DEFAULT_WG_SIZE - 1) / SCL_DEFAULT_WG_SIZE;
     const int SIZE_OUT = N_OF_GROUPS * sizeof(*h_out);
 
     /* Allocate space for host copies of a[] and tmp[] */
-    h_a = (int*)malloc(SIZE); assert(h_a != NULL);
-    h_out = (int*)malloc(SIZE_OUT); assert(h_out != NULL);
+    h_a = (int *) malloc(SIZE);
+    assert(h_a != NULL);
+    h_out = (int *) malloc(SIZE_OUT);
+    assert(h_out != NULL);
     init(h_a, n);
 
     /* Allocate space for device copies of d_a */
@@ -86,19 +88,21 @@ int main( int argc, char *argv[] )
 
     /* Perform the final reduction on the CPU */
     int s = 0;
-    for (int i=0; i<N_OF_GROUPS; i++) {
+    for (int i = 0; i < N_OF_GROUPS; i++) {
         s += h_out[i];
     }
     /* Check result */
-    const int expected = 2*n;
-    if ( s != expected ) {
+    const int expected = 2 * n;
+    if (s != expected) {
         printf("Check FAILED: got %d, expected %d\n", s, expected);
     } else {
         printf("Check OK: sum = %d\n", s);
     }
     /* Cleanup */
-    free(h_a); free(h_out);
-    sclFree(d_a); sclFree(d_out);
+    free(h_a);
+    free(h_out);
+    sclFree(d_a);
+    sclFree(d_out);
     sclFinalize();
     return EXIT_SUCCESS;
 }

@@ -41,28 +41,30 @@ const char *source =
     "    }\n"
     "}\n";
 
-void vec_init( int *a, int n )
+void vec_init(int *a, int n)
 {
     int i;
-    for (i=0; i<n; i++) {
+    for (i = 0; i < n; i++) {
         a[i] = i;
     }
 }
 
-int main( void )
+int main(void)
 {
     sclInitFromString(source);
 
     int *a, *b, *c;             /* host copies of a, b, c */
     cl_mem d_a, d_b, d_c;	/* device copies of a, b, c */
     int i;
-    const size_t N = 1024*1024;
-    const size_t SIZE = N*sizeof(int);
+    const size_t N = 1024 * 1024;
+    const size_t SIZE = N * sizeof(int);
 
     /* Allocate space for host copies of a, b, c */
-    a = (int*)malloc(SIZE); vec_init(a, N);
-    b = (int*)malloc(SIZE); vec_init(b, N);
-    c = (int*)malloc(SIZE);
+    a = (int *) malloc(SIZE);
+    vec_init(a, N);
+    b = (int *) malloc(SIZE);
+    vec_init(b, N);
+    c = (int *) malloc(SIZE);
 
     /* Allocate space for device copies of a, b, c */
     d_a = sclMallocCopy(SIZE, a, CL_MEM_READ_ONLY);
@@ -72,19 +74,15 @@ int main( void )
     /* Launch add() kernel on GPU */
     const sclDim GRID = DIM1(sclRoundUp(N, SCL_DEFAULT_WG_SIZE));
     const sclDim BLOCK = DIM1(SCL_DEFAULT_WG_SIZE);
-    sclSetArgsEnqueueKernel(sclCreateKernel("add_kernel"),
-                            GRID, BLOCK,
-                            ":b :b :b :d",
-                            d_a, d_b, d_c, N);
+    sclSetArgsEnqueueKernel(sclCreateKernel("add_kernel"), GRID, BLOCK, ":b :b :b :d", d_a, d_b, d_c, N);
 
     /* Copy result back to host */
     sclMemcpyDeviceToHost(c, d_c, SIZE);
 
     /* Check results */
-    for (i=0; i<N; i++) {
-        if ( c[i] != a[i] + b[i] ) {
-            fprintf(stderr, "Error at index %d: a[%d]=%d, b[%d]=%d, c[%d]=%d\n",
-                    i, i, a[i], i, b[i], i, c[i]);
+    for (i = 0; i < N; i++) {
+        if (c[i] != a[i] + b[i]) {
+            fprintf(stderr, "Error at index %d: a[%d]=%d, b[%d]=%d, c[%d]=%d\n", i, i, a[i], i, b[i], i, c[i]);
             break;
         }
     }
@@ -92,8 +90,12 @@ int main( void )
         printf("Check OK\n");
     }
     /* Cleanup */
-    free(a); free(b); free(c);
-    sclFree(d_a); sclFree(d_b); sclFree(d_c);
+    free(a);
+    free(b);
+    free(c);
+    sclFree(d_a);
+    sclFree(d_b);
+    sclFree(d_c);
     sclFinalize();
     return EXIT_SUCCESS;
 }

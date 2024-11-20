@@ -40,15 +40,15 @@
 #include <assert.h>
 #include "simpleCL.h"
 
-void init( int *v, int n )
+void init(int *v, int n)
 {
     int i;
-    for (i=0; i<n; i++) {
+    for (i = 0; i < n; i++) {
         v[i] = 2;
     }
 }
 
-int main( int argc, char *argv[] )
+int main(int argc, char *argv[])
 {
     sclInitFromFile("opencl-reduction3.cl");
 
@@ -56,17 +56,18 @@ int main( int argc, char *argv[] )
     cl_mem d_a, d_result;
     int n = 8192;
 
-    assert( (SCL_DEFAULT_WG_SIZE & (SCL_DEFAULT_WG_SIZE-1)) == 0 ); /* check if the default group size is a power of two using the "bit hack" from http://www.graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2 */
+    assert((SCL_DEFAULT_WG_SIZE & (SCL_DEFAULT_WG_SIZE-1)) == 0); /* check if the default group size is a power of two using the "bit hack" from http://www.graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2 */
 
-    if ( argc > 1 ) {
+    if (argc > 1) {
         n = atoi(argv[1]);
     }
 
     const size_t SIZE = n * sizeof(*h_a);
-    const int N_OF_GROUPS = (n + SCL_DEFAULT_WG_SIZE - 1)/SCL_DEFAULT_WG_SIZE;
+    const int N_OF_GROUPS = (n + SCL_DEFAULT_WG_SIZE - 1) / SCL_DEFAULT_WG_SIZE;
 
     /* Allocate space for host copies of array */
-    h_a = (int*)malloc(SIZE); assert(h_a != NULL);
+    h_a = (int *) malloc(SIZE);
+    assert(h_a != NULL);
     init(h_a, n);
 
     /* Allocate space for device copies of aarray */
@@ -83,15 +84,16 @@ int main( int argc, char *argv[] )
     sclMemcpyDeviceToHost(&result, d_result, sizeof(result));
 
     /* Check result */
-    const int expected = 2*n;
-    if ( result != expected ) {
+    const int expected = 2 * n;
+    if (result != expected) {
         printf("Check FAILED: got %d, expected %d\n", result, expected);
     } else {
         printf("Check OK: sum = %d\n", result);
     }
     /* Cleanup */
     free(h_a);
-    sclFree(d_a); sclFree(d_result);
+    sclFree(d_a);
+    sclFree(d_result);
     sclFinalize();
     return EXIT_SUCCESS;
 }

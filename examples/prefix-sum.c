@@ -32,10 +32,10 @@
 #include <assert.h>
 
 /* Prints the content of vector x[]; useful for debugging purposes */
-void print( float* x, int n)
+void print(float *x, int n)
 {
     int i;
-    for (i=0; i<n; i++) {
+    for (i = 0; i < n; i++) {
         printf("[%d]=%f ", i, x[i]);
     }
     printf("\n");
@@ -44,48 +44,47 @@ void print( float* x, int n)
 /* Store in x[] the exclusive prefix-sum of x[] (i.e., at the end of
    this function x[0] == 0). NOTE: this function requires that n is a
    power of two. */
-void prefix_sum( float* x, int n )
+void prefix_sum(float *x, int n)
 {
     int d, k;
 
 #ifndef NDEBUG
     /* check whether n is a power of two */
-    for (d=1; d<n; d <<= 1)
-        ;
+    for (d = 1; d < n; d <<= 1) ;
     assert(d == n);
 #endif
     /* Phase 1: up-sweep */
-    for ( d = 1; d<n/2; d <<= 1 ) {
-        for ( k=0; k<n; k += 2*d ) {
-            assert( k+2*d-1 < n );
-            x[k+2*d-1] = x[k+d-1] + x[k+2*d-1];
+    for (d = 1; d < n / 2; d <<= 1) {
+        for (k = 0; k < n; k += 2 * d) {
+            assert(k + 2 * d - 1 < n);
+            x[k + 2 * d - 1] = x[k + d - 1] + x[k + 2 * d - 1];
         }
     }
 
     /* Phase 2: down-sweep */
-    x[n-1] = 0;
-    for ( ; d > 0; d >>= 1 ) {
-        for (k=0; k<n; k += 2*d ) {
-            assert( k+2*d-1 < n );
-            float t = x[k+d-1];
-            x[k+d-1] = x[k+2*d-1];
-            x[k+2*d-1] = t + x[k+2*d-1];
+    x[n - 1] = 0;
+    for (; d > 0; d >>= 1) {
+        for (k = 0; k < n; k += 2 * d) {
+            assert(k + 2 * d - 1 < n);
+            float t = x[k + d - 1];
+            x[k + d - 1] = x[k + 2 * d - 1];
+            x[k + 2 * d - 1] = t + x[k + 2 * d - 1];
         }
     }
 }
 
-int main( void )
+int main(void)
 {
     float v[32];
     const int n = sizeof(v) / sizeof(v[0]);
     int i;
-    for (i=0; i<n; i++) {
+    for (i = 0; i < n; i++) {
         v[i] = 1;
     }
     prefix_sum(v, n);
-    for (i=0; i<n; i++) {
-        if ( fabs(v[i] - i) > 1e-5 ) {
-            fprintf(stderr, "Error at index %d: expected %f, got %f\n", i, (double)i, v[i]);
+    for (i = 0; i < n; i++) {
+        if (fabs(v[i] - i) > 1e-5) {
+            fprintf(stderr, "Error at index %d: expected %f, got %f\n", i, (double) i, v[i]);
             return EXIT_FAILURE;
         }
     }

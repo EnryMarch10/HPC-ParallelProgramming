@@ -19,8 +19,8 @@ public class matmul_test {
     {
         Random rnd = new Random();
 
-        for (int i=0; i<n; i++) {
-            for (int j=0; j<n; j++) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
                 p[i][j] = rnd.nextDouble();
                 q[i][j] = rnd.nextDouble();
                 r[i][j] = 0;
@@ -30,9 +30,9 @@ public class matmul_test {
         System.out.printf("Matrix-Matrix multiplication (Java), %d x %d\n\n", n, n);
 
         final long start = System.nanoTime();
-        for (int i=0; i<n; i++) {
-            for (int j=0; j<n; j++) {
-                for (int k=0; k<n; k++) {
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                for (int k = 0; k < n; k++) {
                     r[i][j] += p[i][k] * q[k][j];
                 }
             }

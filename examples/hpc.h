@@ -5,17 +5,18 @@
  * Copyright (C) 2017 by Moreno Marzolla <https://www.moreno.marzolla.name/>
  * Last modified on 2024-01-04 by Moreno Marzolla
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * --------------------------------------------------------------------------
  *
@@ -42,7 +43,7 @@
 /******************************************************************************
  * OpenMP timing routines
  ******************************************************************************/
-double hpc_gettime( void )
+double hpc_gettime(void)
 {
     return omp_get_wtime();
 }
@@ -51,7 +52,7 @@ double hpc_gettime( void )
 /******************************************************************************
  * MPI timing routines
  ******************************************************************************/
-double hpc_gettime( void )
+double hpc_gettime(void)
 {
     return MPI_Wtime();
 }
@@ -65,11 +66,11 @@ double hpc_gettime( void )
 #endif
 #include <time.h>
 
-double hpc_gettime( void )
+double hpc_gettime(void)
 {
     struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts );
-    return ts.tv_sec + (double)ts.tv_nsec / 1e9;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return ts.tv_sec + (double) ts.tv_nsec / 1e9;
 }
 #endif
 
@@ -80,36 +81,33 @@ double hpc_gettime( void )
 
 /* from https://gist.github.com/ashwin/2652488 */
 
-#define cudaSafeCall( err ) __cudaSafeCall( err, __FILE__, __LINE__ )
-#define cudaCheckError()    __cudaCheckError( __FILE__, __LINE__ )
+#define cudaSafeCall(err) __cudaSafeCall(err, __FILE__, __LINE__)
+#define cudaCheckError()    __cudaCheckError(__FILE__, __LINE__)
 
-inline void __cudaSafeCall( cudaError err, const char *file, const int line )
+inline void __cudaSafeCall(cudaError err, const char *file, const int line)
 {
 #ifndef NO_CUDA_CHECK_ERROR
-    if ( cudaSuccess != err ) {
-        fprintf( stderr, "cudaSafeCall() failed at %s:%i : %s\n",
-                 file, line, cudaGetErrorString( err ) );
+    if (cudaSuccess != err) {
+        fprintf(stderr, "cudaSafeCall() failed at %s:%i : %s\n", file, line, cudaGetErrorString(err));
         abort();
     }
 #endif
 }
 
-inline void __cudaCheckError( const char *file, const int line )
+inline void __cudaCheckError(const char *file, const int line)
 {
 #ifndef NO_CUDA_CHECK_ERROR
     cudaError err = cudaGetLastError();
-    if ( cudaSuccess != err ) {
-        fprintf( stderr, "cudaCheckError() failed at %s:%i : %s\n",
-                 file, line, cudaGetErrorString( err ) );
+    if (cudaSuccess != err) {
+        fprintf(stderr, "cudaCheckError() failed at %s:%i : %s\n", file, line, cudaGetErrorString(err));
         abort();
     }
 
     /* More careful checking. However, this will affect performance.
        Comment away if needed. */
     err = cudaDeviceSynchronize();
-    if( cudaSuccess != err ) {
-        fprintf( stderr, "cudaCheckError() with sync failed at %s:%i : %s\n",
-                 file, line, cudaGetErrorString( err ) );
+    if (cudaSuccess != err) {
+        fprintf(stderr, "cudaCheckError() with sync failed at %s:%i : %s\n", file, line, cudaGetErrorString(err));
         abort();
     }
 #endif

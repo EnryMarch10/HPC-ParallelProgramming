@@ -49,12 +49,12 @@
 #include "hpc.h"
 
 /* Fills n x n square matrix m with random values */
-void fill( double* m, int n )
+void fill(double* m, int n)
 {
     int i, j;
-    for (i=0; i<n; i++) {
-        for (j=0; j<n; j++) {
-            m[i*n + j] = rand() / (double)RAND_MAX;
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < n; j++) {
+            m[i * n + j] = rand() / (double) RAND_MAX;
         }
     }
 }
@@ -65,26 +65,26 @@ void fill( double* m, int n )
    matrices. The caller is responsible for allocating the memory for
    r. This function allocates (and the frees) an additional n x n
    temporary matrix. */
-void matmul( double *p, double* q, double *r, int n)
+void matmul(double *p, double *q, double *r, int n)
 {
     int i, j, k;
-    double *qT = (double*)malloc( n * n * sizeof(double) );
+    double *qT = (double *) malloc(n * n * sizeof(double));
 
     /* transpose q, storing the result in qT */
-    for (i=0; i<n; i++) {
-        for (j=0; j<n; j++) {
-            qT[j*n + i] = q[i*n + j];
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < n; j++) {
+            qT[j * n + i] = q[i * n + j];
         }
     }
 
     /* multiply p and qT row-wise */
-    for (i=0; i<n; i++) {
-        for (j=0; j<n; j++) {
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < n; j++) {
             double s = 0.0;
-            for (k=0; k<n; k++) {
-                s += p[i*n + k] * qT[j*n + k];
+            for (k = 0; k < n; k++) {
+                s += p[i * n + k] * qT[j * n + k];
             }
-            r[i*n + j] = s;
+            r[i * n + j] = s;
         }
     }
 
@@ -95,24 +95,24 @@ void matmul( double *p, double* q, double *r, int n)
 
 /* compute r = p * q, where p, q, r are n x n matrices. The caller is
    responsible for allocating the memory for r */
-void matmul( double *p, double* q, double *r, int n)
+void matmul(double *p, double* q, double *r, int n)
 {
     int i, j, k;
 
-    for (i=0; i<n; i++) {
-        for (j=0; j<n; j++) {
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < n; j++) {
             double s = 0.0;
-            for (k=0; k<n; k++) {
-                s += p[i*n + k] * q[k*n + j];
+            for (k = 0; k < n; k++) {
+                s += p[i * n + k] * q[k * n + j];
             }
-            r[i*n + j] = s;
+            r[i * n + j] = s;
         }
     }
 }
 
 #endif
 
-int main( int argc, char *argv[] )
+int main(int argc, char *argv[])
 {
     int n = 1024;
     double tstart, tstop;
@@ -127,9 +127,9 @@ int main( int argc, char *argv[] )
         n = atoi(argv[1]);
     }
 
-    p = (double*)malloc( n * n * sizeof(double) );
-    q = (double*)malloc( n * n * sizeof(double) );
-    r = (double*)malloc( n * n * sizeof(double) );
+    p = (double *) malloc(n * n * sizeof(double));
+    q = (double *) malloc(n * n * sizeof(double));
+    r = (double *) malloc(n * n * sizeof(double));
 
     fill(p, n);
     fill(q, n);

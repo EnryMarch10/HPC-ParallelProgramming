@@ -39,8 +39,8 @@ float vsum_vector(float *v, int n)
     int i;
 
     vs = _mm_setzero_ps();
-    for (i=0; i<n-4+1; i += 4) {
-        vv = _mm_loadu_ps( &v[i] );     /* load four floats into vv */
+    for (i = 0; i < n - 4 + 1; i += 4) {
+        vv = _mm_loadu_ps(&v[i]);     /* load four floats into vv */
         vs = _mm_add_ps(vv, vs);        /* vs = vs + vv */
     }
 
@@ -48,7 +48,7 @@ float vsum_vector(float *v, int n)
     ss = vs[0] + vs[1] + vs[2] + vs[3];
 
     /* Take care of leftovers */
-    for ( ; i<n; i++) {
+    for (; i < n; i++) {
         ss += v[i];
     }
     return ss;
@@ -58,7 +58,7 @@ float vsum_scalar(const float *v, int n)
 {
     float s = 0.0;
     int i;
-    for (i=0; i<n; i++) {
+    for (i = 0; i < n; i++) {
         s += v[i];
     }
     return s;
@@ -67,35 +67,35 @@ float vsum_scalar(const float *v, int n)
 void fill(float *v, int n)
 {
     int i;
-    for (i=0; i<n; i++) {
-        v[i] = i%10;
+    for (i = 0; i < n; i++) {
+        v[i] = i % 10;
     }
 }
 
-int main( int argc, char *argv[] )
+int main(int argc, char *argv[])
 {
     float *vec;
     int n = 1024;
     float vsum_s, vsum_v;
 
-    if ( argc > 2 ) {
+    if (argc > 2) {
         fprintf(stderr, "Usage: %s [n]\n", argv[0]);
         return EXIT_FAILURE;
     }
 
-    if ( argc > 1 ) {
+    if (argc > 1) {
         n = atoi(argv[1]);
     }
 
     /* The memory does not need to be aligned, since
        we are using the load unaligned intrinsic */
-    vec = (float*)malloc(n*sizeof(*vec));
+    vec = (float *) malloc(n * sizeof(*vec));
     assert(vec != NULL);
     fill(vec, n);
     vsum_s = vsum_scalar(vec, n);
     vsum_v = vsum_vector(vec, n);
     printf("Scalar sum=%f, vector sum=%f\n", vsum_s, vsum_v);
-    if ( fabs(vsum_s - vsum_v) > 1e-5 ) {
+    if (fabs(vsum_s - vsum_v) > 1e-5) {
         fprintf(stderr, "Test FAILED\n");
     } else {
         fprintf(stderr, "Test OK\n");

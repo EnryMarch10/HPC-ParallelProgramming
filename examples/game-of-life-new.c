@@ -44,7 +44,7 @@ typedef unsigned char cell_t;
 /* Simplifies indexing on a (SIZE+2)*(SIZE+2) grid */
 int IDX(int i, int j)
 {
-    return i * (SIZE+2) + j;
+    return i * (SIZE + 2) + j;
 }
 
 /* some useful constants; first and last rows/columns of the domain */
@@ -73,21 +73,21 @@ const int RIGHT  = SIZE;
  */
 
 /* Fill the ghost cells of |grid| */
-void copy_sides( cell_t *grid )
+void copy_sides(cell_t *grid)
 {
     int i, j;
-    const int HALO_TOP    = TOP-1;
-    const int HALO_BOTTOM = BOTTOM+1;
-    const int HALO_LEFT   = LEFT-1;
-    const int HALO_RIGHT  = RIGHT+1;
+    const int HALO_TOP    = TOP - 1;
+    const int HALO_BOTTOM = BOTTOM + 1;
+    const int HALO_LEFT   = LEFT - 1;
+    const int HALO_RIGHT  = RIGHT + 1;
 
     /* copy top and bottom (one can also use memcpy() ) */
-    for (j=LEFT; j<RIGHT+1; j++) {
+    for (j = LEFT; j < RIGHT + 1; j++) {
         grid[IDX(HALO_TOP,    j)] = grid[IDX(BOTTOM, j)];
         grid[IDX(HALO_BOTTOM, j)] = grid[IDX(TOP,    j)];
     }
     /* copy left and right */
-    for (i=TOP; i<BOTTOM+1; i++) {
+    for (i = TOP; i < BOTTOM + 1; i++) {
         grid[IDX(i, HALO_LEFT )] = grid[IDX(i, RIGHT)];
         grid[IDX(i, HALO_RIGHT)] = grid[IDX(i, LEFT )];
     }
@@ -99,21 +99,21 @@ void copy_sides( cell_t *grid )
 }
 
 /* Compute the |next| grid given the |cur|rent configuration. */
-void step( cell_t *cur, cell_t *next )
+void step(cell_t *cur, cell_t *next)
 {
     int i, j;
-    for (i=TOP; i<BOTTOM+1; i++) {
-        for (j=LEFT; j<RIGHT+1; j++) {
+    for (i = TOP; i < BOTTOM + 1; i++) {
+        for (j = LEFT; j < RIGHT + 1; j++) {
             /* count live neighbors of cell (i,j) */
             int nbors =
-                cur[IDX(i-1,j-1)] + cur[IDX(i-1,j)] + cur[IDX(i-1,j+1)] +
-                cur[IDX(i  ,j-1)] +                   cur[IDX(i  ,j+1)] +
-                cur[IDX(i+1,j-1)] + cur[IDX(i+1,j)] + cur[IDX(i+1,j+1)];
+                cur[IDX(i - 1,j - 1)] + cur[IDX(i - 1,j)] + cur[IDX(i - 1,j + 1)] +
+                cur[IDX(i    ,j - 1)] +                     cur[IDX(i    ,j + 1)] +
+                cur[IDX(i + 1,j - 1)] + cur[IDX(i + 1,j)] + cur[IDX(i + 1,j + 1)];
  	    /* apply rules of the game of life to cell (i, j) */
-            if ( cur[IDX(i,j)] && (nbors < 2 || nbors > 3)) {
+            if (cur[IDX(i,j)] && (nbors < 2 || nbors > 3)) {
                 next[IDX(i,j)] = 0;
             } else {
-                if ( !cur[IDX(i,j)] && (nbors == 3)) {
+                if (!cur[IDX(i,j)] && (nbors == 3)) {
                     next[IDX(i,j)] = 1;
                 } else {
                     next[IDX(i,j)] = cur[IDX(i,j)];
@@ -124,18 +124,18 @@ void step( cell_t *cur, cell_t *next )
 }
 
 /* Initialize |grid| with alive cells with density p */
-void init( cell_t *grid, float p )
+void init(cell_t *grid, float p)
 {
     int i, j;
-    for (i=TOP; i<BOTTOM+1; i++) {
-        for (j=LEFT; j<RIGHT+1; j++) {
-            grid[IDX(i,j)] = (rand()/(double)RAND_MAX < p);
+    for (i = TOP; i < BOTTOM + 1; i++) {
+        for (j = LEFT; j < RIGHT + 1; j++) {
+            grid[IDX(i,j)] = (rand() / (double) RAND_MAX < p);
         }
     }
 }
 
 /* Write |grid| to file |fname| in pbm (portable bitmap) format. */
-void write_pbm( cell_t *grid, const char* fname )
+void write_pbm(cell_t *grid, const char* fname)
 {
     int i, j;
     FILE *f = fopen(fname, "w");
@@ -146,9 +146,9 @@ void write_pbm( cell_t *grid, const char* fname )
     fprintf(f, "P1\n");
     fprintf(f, "# produced by game-of-life.c\n");
     fprintf(f, "%d %d\n", SIZE, SIZE);
-    for (i=TOP; i<BOTTOM+1; i++) {
-        for (j=LEFT; j<RIGHT+1; j++) {
-            fprintf(f, "%d ", grid[IDX(i,j)]);
+    for (i = TOP; i < BOTTOM + 1; i++) {
+        for (j = LEFT; j < RIGHT + 1; j++) {
+            fprintf(f, "%d ", grid[IDX(i, j)]);
         }
         fprintf(f, "\n");
     }
@@ -157,29 +157,29 @@ void write_pbm( cell_t *grid, const char* fname )
 
 #define STRBUFSZ 128
 
-int main( int argc, char* argv[] )
+int main(int argc, char *argv[])
 {
     int s, nsteps;
     char fname[STRBUFSZ];
-    const size_t GRID_SIZE = (SIZE+2)*(SIZE+2)*sizeof(cell_t);
-    cell_t *cur = (cell_t*)malloc(GRID_SIZE);
-    cell_t *next = (cell_t*)malloc(GRID_SIZE);
+    const size_t GRID_SIZE = (SIZE + 2) * (SIZE + 2) * sizeof(cell_t);
+    cell_t *cur = (cell_t *) malloc(GRID_SIZE);
+    cell_t *next = (cell_t *) malloc(GRID_SIZE);
 
     srand(1234); /* init RNG */
 
-    if ( argc > 2 ) {
+    if (argc > 2) {
         printf("Usage: %s [nsteps]\n", argv[0]);
         return EXIT_FAILURE;
     }
 
-    if ( argc == 2 ) {
+    if (argc == 2) {
         nsteps = atoi(argv[1]);
     } else {
         nsteps = 256;
     }
 
     init(cur, 0.3);
-    for (s=0; s<nsteps; s++) {
+    for (s = 0; s < nsteps; s++) {
         cell_t *tmp;
         snprintf(fname, STRBUFSZ, "gol%05d.pbm", s);
         write_pbm(cur, fname);

@@ -22,16 +22,16 @@
 
 void print_xmm(__m128i v)
 {
-    int* vv = (int*)&v;
+    int* vv = (int *) &v;
     printf("v0=%d v1=%d v2=%d v3=%d\n", vv[0], vv[1], vv[2], vv[3]);
 }
 
-int main( void )
+int main(void)
 {
     __m128i v, vp;
     int r;
 
-    v  = _mm_set_epi32(19,-1, 77, 34); /* [34|77|-1|19] */
+    v  = _mm_set_epi32(19, -1, 77, 34); /* [34|77|-1|19] */
     print_xmm(v);
     vp = _mm_shuffle_epi32(v, _MM_SHUFFLE(3, 3, 1, 1));   /*  11.11.01.01  */
     print_xmm(vp);

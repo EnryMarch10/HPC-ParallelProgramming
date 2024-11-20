@@ -34,12 +34,12 @@
 #include <stdlib.h>
 
 /* Returns the dot product of n-element vectors x and y. */
-float dot_serial( const float* x, const float* y, int n )
+float dot_serial(const float *x, const float *y, int n)
 {
     float result = 0.0;
     int i;
-    for ( i=0; i<n; i++ ) {
-	result += x[i] * y[i];
+    for (i = 0; i < n; i++) {
+        result += x[i] * y[i];
     }
     return result;
 }
@@ -47,56 +47,57 @@ float dot_serial( const float* x, const float* y, int n )
 /* Returns the dot product of n-element vectors x and y using SSE
    instructions. x and y are not required to be aligned,; furthermore,
    this function should work with any length n */
-float dot_sse( const float* x, const float* y, int n )
+float dot_sse(const float *x, const float *y, int n)
 {
     __m128 vx, vy, vtmp, vsum;
     int i;
     float result = 0.0, temp[4];
 
     vsum = _mm_setzero_ps(); /* set vsum[0..3] to zero */
-    for ( i=0; i<n-3; i += 4 ) {
-	vx = _mm_loadu_ps( &x[i] ); /* vx = [ x[i], x[i+1], x[i+2], x[i+3] ] */
-	vy = _mm_loadu_ps( &y[i] ); /* vy = [ y[i], y[i+1], y[i+2], y[i+3] ] */
-	vtmp = _mm_mul_ps( vx, vy ); /* vtmp = [ x[i]   * y[i],
-					         x[i+1] * y[i+1],
-					         x[i+2] * y[i+2],
-					         x[i+3] * y[i+3] ] */
-	vsum = _mm_add_ps( vsum, vtmp ); /* accumulate */
+    for (i = 0; i < n - 3; i += 4) {
+        vx = _mm_loadu_ps(&x[i]); /* vx = [ x[i], x[i+1], x[i+2], x[i+3] ] */
+        vy = _mm_loadu_ps(&y[i]); /* vy = [ y[i], y[i+1], y[i+2], y[i+3] ] */
+        vtmp = _mm_mul_ps(vx, vy); /* vtmp = [ x[i]   * y[i],
+                                x[i+1] * y[i+1],
+                                x[i+2] * y[i+2],
+                                x[i+3] * y[i+3] ] */
+        vsum = _mm_add_ps(vsum, vtmp); /* accumulate */
     }
     /* SSE3 has a _mm_hadd_ps() for horizontal addition; previous
        versions of SSE have not, so we do the following */
-    _mm_storeu_ps( temp, vsum );
+    _mm_storeu_ps(temp, vsum);
     result = temp[0] + temp[1] + temp[2] + temp[3];
     /* Take care of any remaining element */
-    for ( ; i<n; i++ ) {
-	result += x[i] * y[i];
+    for (; i < n; i++) {
+        result += x[i] * y[i];
     }
     return result;
 }
 
 /* Fills vector v with n random values in [0, 1] */
-void fill( float* v, int n )
+void fill(float *v, int n)
 {
-    int i;
-    for ( i=0; i<n; i++ ) {
-	v[i] = rand() / (double)RAND_MAX; /* cast to float */
+    int i; 
+    for (i = 0; i < n; i++) {
+        v[i] = rand() / (double) RAND_MAX; /* cast to float */
     }
 }
 
-int main( int argc, char* argv[] )
+int main(int argc, char *argv[])
 {
     int n = 1024;
     float *x, *y, result_sse, result_serial;
-    if ( argc == 2 )
-	n = atoi(argv[1]);
+    if (argc == 2) {
+        n = atoi(argv[1]);
+    }
 
-    x = (float*)malloc( n * sizeof(float) );
+    x = (float *) malloc(n * sizeof(float));
     fill(x, n);
-    y = (float*)malloc( n * sizeof(float) );
+    y = (float *) malloc(n * sizeof(float));
     fill(y, n);
 
-    result_sse = dot_sse( x, y, n);
-    result_serial = dot_serial( x, y, n );
+    result_sse = dot_sse(x, y, n);
+    result_serial = dot_serial(x, y, n);
 
     printf("SSE   : %f\n", result_sse);
     printf("Serial: %f\n", result_serial);

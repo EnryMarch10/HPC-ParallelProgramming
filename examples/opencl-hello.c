@@ -31,9 +31,7 @@
 int main(void)
 {
     sclInitFromString("__kernel void mykernel(void) { }");
-    sclSetArgsLaunchKernel(sclCreateKernel("mykernel"),
-                           DIM1(1), DIM1(1),
-                           NULL);
+    sclSetArgsLaunchKernel(sclCreateKernel("mykernel"), DIM1(1), DIM1(1), NULL);
     printf("Hello World!\n");
     sclFinalize();
     return 0;

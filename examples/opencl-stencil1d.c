@@ -33,7 +33,7 @@
 #include <assert.h>
 #include "simpleCL.h"
 
-int main( void )
+int main(void)
 {
     sclInitFromFile("opencl-stencil1d.cl");
 
@@ -42,15 +42,17 @@ int main( void )
     int i;
     const int RADIUS = 3;
     const size_t N = SCL_DEFAULT_WG_SIZE * 1024; /* Input length EXCLUDING the first and last RADIUS elements */
-    const size_t SIZE = (N+2*RADIUS)*sizeof(*h_in); /* input size */
+    const size_t SIZE = (N + 2 * RADIUS) * sizeof(*h_in); /* input size */
 
-    assert( N % SCL_DEFAULT_WG_SIZE == 0 );
+    assert(N % SCL_DEFAULT_WG_SIZE == 0);
 
     /* Allocate space for host copies of h_in and h_out */
-    h_in = (int*)malloc(SIZE); assert(h_in != NULL);
-    h_out = (int*)malloc(SIZE); assert(h_out != NULL);
+    h_in = (int *) malloc(SIZE);
+    assert(h_in != NULL);
+    h_out = (int *) malloc(SIZE);
+    assert(h_out != NULL);
     /* Initialize h_in[] */
-    for (i=0; i<N+2*RADIUS; i++) { h_in[i] = 1; }
+    for (i = 0; i < N + 2 * RADIUS; i++) { h_in[i] = 1; }
 
     /* Allocate space for device copies of d_in and d_out */
     d_in = sclMallocCopy(SIZE, h_in, CL_MEM_READ_ONLY);
@@ -63,16 +65,18 @@ int main( void )
     /* Copy result back to host */
     sclMemcpyDeviceToHost(h_out, d_out, SIZE);
     /* Check the result */
-    for (i=RADIUS; i<N+RADIUS; i++) {
-        if ( h_out[i] != 7 ) {
+    for (i = RADIUS; i < N + RADIUS; i++) {
+        if (h_out[i] != 7) {
             fprintf(stderr, "Error at index %d: h_out[%d] == %d, expected 7\n", i, i, h_out[i]);
             return EXIT_FAILURE;
         }
     }
     printf("Test OK\n");
     /* Cleanup */
-    free(h_in); free(h_out);
-    sclFree(d_in); sclFree(d_out);
+    free(h_in);
+    free(h_out);
+    sclFree(d_in);
+    sclFree(d_out);
     sclFinalize();
     return EXIT_SUCCESS;
 }

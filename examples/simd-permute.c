@@ -21,13 +21,13 @@
 #include <stdlib.h>
 #include <x86intrin.h>
 
-void print_simd( __m128i v )
+void print_simd(__m128i v)
 {
-    const int* vv = (int*)&v;
+    const int *vv = (int *) &v;
     printf("%d %d %d %d\n", vv[0], vv[1], vv[2], vv[3]);
 }
-
-int main( void )
+ 
+int main(void)
 {
     __m128i v, v1, v2, v3, v4;
 

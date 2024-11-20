@@ -38,33 +38,33 @@ const char* source =
     "    *c = *a + *b;\n"
     "}\n";
 
-int main( void )
+int main(void)
 {
     int a, b, c;	          /* host copies of a, b, c */
     cl_mem d_a, d_b, d_c;	  /* device copies of a, b, c */
     const size_t size = sizeof(int);
     sclInitFromString(source);
     /* Setup input values */
-    a = 2; b = 7;
+    a = 2;
+    b = 7;
     /* Allocate space for device copies of a, b, c */
     d_a = sclMallocCopy(size, &a, CL_MEM_READ_ONLY);
     d_b = sclMallocCopy(size, &b, CL_MEM_READ_ONLY);
     d_c = sclMalloc(size, CL_MEM_WRITE_ONLY);
     /* Launch add() kernel on GPU */
-    sclSetArgsEnqueueKernel(sclCreateKernel("add_kernel"),
-                            DIM1(1), DIM1(1),
-                            ":b :b :b",
-                            d_a, d_b, d_c);
+    sclSetArgsEnqueueKernel(sclCreateKernel("add_kernel"), DIM1(1), DIM1(1), ":b :b :b", d_a, d_b, d_c);
     /* Copy result back to host */
     sclMemcpyDeviceToHost(&c, d_c, size);
     /* check result */
-    if ( c != a + b ) {
+    if (c != a + b) {
         fprintf(stderr, "Test FAILED: expected %d, got %d\n", a+b, c);
     } else {
         printf("Test OK\n");
     }
     /* Cleanup */
-    sclFree(d_a); sclFree(d_b); sclFree(d_c);
+    sclFree(d_a);
+    sclFree(d_b);
+    sclFree(d_c);
     sclFinalize();
     return EXIT_SUCCESS;
 }

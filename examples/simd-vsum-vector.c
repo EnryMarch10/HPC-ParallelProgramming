@@ -44,7 +44,7 @@
 #include <math.h> /* for fabs() */
 
 typedef float v4f __attribute__((vector_size(16)));
-#define VLEN (sizeof(v4f)/sizeof(float))
+#define VLEN (sizeof(v4f) / sizeof(float))
 
 float vsum_vector(const float *v, int n)
 {
@@ -52,7 +52,7 @@ float vsum_vector(const float *v, int n)
     float ss = 0.0;
     const v4f *vv = (v4f*)v;
     int i;
-    for (i=0; i<n-VLEN+1; i += VLEN) {
+    for (i = 0; i < n - VLEN + 1; i += VLEN) {
         vs += *vv;
         vv++;
     }
@@ -61,7 +61,7 @@ float vsum_vector(const float *v, int n)
     ss = vs[0] + vs[1] + vs[2] + vs[3];
 
     /* Take care of leftovers, if any */
-    for ( ; i<n; i++) {
+    for (; i < n; i++) {
         ss += v[i];
     }
     return ss;
@@ -70,7 +70,7 @@ float vsum_vector(const float *v, int n)
 float vsum_scalar(const float *v, int n)
 {
     float s = 0.0;
-    for (int i=0; i<n; i++) {
+    for (int i = 0; i < n; i++) {
         s += v[i];
     }
     return s;
@@ -78,24 +78,24 @@ float vsum_scalar(const float *v, int n)
 
 void fill(float *v, int n)
 {
-    for (int i=0; i<n; i++) {
-        v[i] = i%10;
+    for (int i = 0; i < n; i++) {
+        v[i] = i % 10;
     }
 }
 
-int main( int argc, char *argv[] )
+int main(int argc, char *argv[])
 {
     float *vec;
     int n = 1024;
     float vsum_s, vsum_v;
     int ret; /* for posix_memalign() */
 
-    if ( argc > 2 ) {
+    if (argc > 2) {
         fprintf(stderr, "Usage: %s [n]\n", argv[0]);
         return EXIT_FAILURE;
     }
 
-    if ( argc > 1 ) {
+    if (argc > 1) {
         n = atoi(argv[1]);
     }
 
@@ -115,14 +115,14 @@ int main( int argc, char *argv[] )
        and then write the expression `(void)ret` that does
        nothing. There are better solutions via a GCC-specific #pragma
        directive, but they are not portable to other compilers. */
-    ret = posix_memalign((void **)&vec, __BIGGEST_ALIGNMENT__, n*sizeof(*vec));
-    (void)ret;
+    ret = posix_memalign((void **) &vec, __BIGGEST_ALIGNMENT__, n * sizeof(*vec));
+    (void) ret;
 
     fill(vec, n);
     vsum_s = vsum_scalar(vec, n);
     vsum_v = vsum_vector(vec, n);
     printf("Scalar sum=%f, vector sum=%f\n", vsum_s, vsum_v);
-    if ( fabs(vsum_s - vsum_v) > 1e-5 ) {
+    if (fabs(vsum_s - vsum_v) > 1e-5) {
         fprintf(stderr, "Test FAILED\n");
     } else {
         fprintf(stderr, "Test OK\n");

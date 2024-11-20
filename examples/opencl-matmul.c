@@ -48,19 +48,19 @@
 #define BLKDIM 16
 
 /* Initialize square matrix q */
-void mat_init( float *q, int n )
+void mat_init(float *q, int n)
 {
-    for (int i=0; i<n*n; i++) {
+    for (int i = 0; i < n * n; i++) {
         q[i] = 1.0;
     }
 }
 
-int check_result( const float *r, int n )
+int check_result(const float *r, int n)
 {
-    for (int i=0; i<n; i++) {
-        for (int j=0; j<n; j++) {
-            if (fabsf(r[i*n+j] - n) > 1e-5) {
-                printf("Check failed: r[%d][%d] = %f, expected %f\n", i, j, r[i*n+j], (float)n);
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (fabsf(r[i * n + j] - n) > 1e-5) {
+                printf("Check failed: r[%d][%d] = %f, expected %f\n", i, j, r[i * n + j], (float) n);
                 return 0;
             }
         }
@@ -71,18 +71,18 @@ int check_result( const float *r, int n )
 
 size_t roundup(size_t s, size_t m)
 {
-    return ((s+m-1)/m)*m;
+    return ((s + m - 1) / m) * m;
 }
 
-int main( int argc, char* argv[] )
+int main(int argc, char *argv[])
 {
-    float *p, *q, *r;	          /* host copies of p, q, r */
-    cl_mem d_p, d_q, d_r;	  /* device copies of p, q, r */
+    float *p, *q, *r;     /* host copies of p, q, r */
+    cl_mem d_p, d_q, d_r; /* device copies of p, q, r */
     int N = 512;
     const int NMAX = 4096;
     double tstart, tstop, tnoshared, tshared;
 
-    if ( argc > 1 ) {
+    if (argc > 1) {
         N = atoi(argv[1]);
     }
 
@@ -91,12 +91,14 @@ int main( int argc, char* argv[] )
     sclInitFromFile("opencl-matmul.cl");
     const sclDim block = DIM2(BLKDIM, BLKDIM);
     const sclDim grid = DIM2(roundup(N, BLKDIM), roundup(N, BLKDIM));
-    const size_t size = N*N*sizeof(float);
+    const size_t size = N * N * sizeof(float);
 
     /* Allocate space for host copies of p, q, r */
-    p = (float*)malloc(size); mat_init(p, N);
-    q = (float*)malloc(size); mat_init(q, N);
-    r = (float*)malloc(size);
+    p = (float *) malloc(size);
+    mat_init(p, N);
+    q = (float *) malloc(size);
+    mat_init(q, N);
+    r = (float *) malloc(size);
 
         /* Allocate space for device copies of p, q, r */
     d_p = sclMallocCopy(size, p, CL_MEM_READ_ONLY);

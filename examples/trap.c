@@ -52,9 +52,9 @@
 /*
  * Function to be integrated
  */
-double f( double x )
+double f(double x)
 {
-    return 4.0/(1.0 + x*x);
+    return 4.0 / (1.0 + x * x);
 }
 
 /*
@@ -62,7 +62,7 @@ double f( double x )
  * rule. The integration interval [a,b] is partitioned into n
  * subintervals of equal size.
  */
-double trap( double a, double b, int n )
+double trap(double a, double b, int n)
 {
     /*
      * This code is a direct implementation of the trapezoid rule.
@@ -71,28 +71,28 @@ double trap( double a, double b, int n )
      * variable |result|.
      */
     double result = 0.0;
-    const double h = (b-a)/n;
+    const double h = (b  - a) / n;
     double x = a;
     int i;
-    for ( i = 0; i<n; i++ ) {
-	result += h*(f(x) + f(x+h))/2.0;
-	x += h;
+    for (i = 0; i < n; i++) {
+        result += h * (f(x) + f(x + h)) / 2.0;
+        x += h;
     }
     return result;
 }
 
-int main( int argc, char* argv[] )
+int main(int argc, char *argv[])
 {
     double a, b, result;
     int n;
-    if ( 4 == argc ) {
-	a = atof(argv[1]);
-	b = atof(argv[2]);
-	n = atoi(argv[3]);
+    if (argc == 4) {
+        a = atof(argv[1]);
+        b = atof(argv[2]);
+        n = atoi(argv[3]);
     } else {
-	a = 0.0;
-	b = 1.0;
-	n = 1000000;
+        a = 0.0;
+        b = 1.0;
+        n = 1000000;
     }
     result = trap(a, b, n);
     printf("Area: %f\n", result);
