@@ -45,7 +45,7 @@
 #define BLKDIM 1024
 #define N_OF_BLOCKS 1024
 /* N must be an integer multiple of BLKDIM */
-#define N ((N_OF_BLOCKS)*(BLKDIM))
+#define N ((N_OF_BLOCKS) * (BLKDIM))
 
 /* d_sums is an array of N_OF_BLOCKS integers that reside in device
    memory; therefore, there is no need to cudaMalloc'ate it */
@@ -61,7 +61,7 @@ int h_sums[N_OF_BLOCKS];
 
    This function requires that BLKDIM is a power of two and that n is
    a muliple of BLKDIM. */
-__global__ void sum( int *a, int n )
+__global__ void sum(int *a, int n)
 {
     __shared__ int temp[BLKDIM];
     int lindex = threadIdx.x;
@@ -75,8 +75,8 @@ __global__ void sum( int *a, int n )
     __syncthreads();
 
     /* All threads within the block cooperate to compute the local sum */
-    while ( bsize > 0 ) {
-        if ( lindex < bsize ) {
+    while (bsize > 0) {
+        if (lindex < bsize) {
             temp[lindex] += temp[lindex + bsize];
         }
         bsize = bsize / 2;
@@ -85,44 +85,44 @@ __global__ void sum( int *a, int n )
         __syncthreads();
     }
 
-    if ( 0 == lindex ) {
+    if (lindex == 0) {
         /* Thread 0 of each block copies the local sum (temp[0]) into
            the appropriate element of d_sums */
         d_sums[bindex] = temp[0];
     }
 }
 
-int main( void )
+int main(void)
 {
     int *h_a;
     int *d_a;
 
-    assert( 0 == N % BLKDIM ); /* N must be a multiple of BLKDIM */
-    assert( (BLKDIM & (BLKDIM-1) ) == 0 ); /* check if BLKDIM is a power of two using the "bit hack" from http://www.graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2 */
+    assert(0 == N % BLKDIM); /* N must be a multiple of BLKDIM */
+    assert((BLKDIM & (BLKDIM - 1)) == 0); /* check if BLKDIM is a power of two using the "bit hack" from http://www.graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2 */
 
     /* Allocate space for device copies of d_a */
-    cudaMalloc((void **)&d_a, N*sizeof(int));
+    cudaMalloc((void **) &d_a, N * sizeof(int));
     /* Allocate space for host copies of h_a */
-    h_a = (int*)malloc(N * sizeof(int));
+    h_a = (int *) malloc(N * sizeof(int));
     /* Set all elements of vector h_a to 2, so that we know that the
        result of the sum must be 2*N */
-    for (int i=0; i<N; i++) {
+    for (int i = 0; i < N; i++) {
         h_a[i] = 2;
     }
     /* Copy inputs to device */
-    cudaMemcpy(d_a, h_a, N*sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_a, h_a, N * sizeof(int), cudaMemcpyHostToDevice);
     /* Launch sum() kernel on the GPU */
     sum<<<N_OF_BLOCKS, BLKDIM>>>(d_a, N);
     /* Copy the d_sums[] array from device memory to host memory h_sums[] */
-    cudaMemcpyFromSymbol(h_sums, d_sums, N_OF_BLOCKS*sizeof(int));
+    cudaMemcpyFromSymbol(h_sums, d_sums, N_OF_BLOCKS * sizeof(int));
     /* Perform the final reduction on the CPU */
     int s = 0;
-    for (int i=0; i<N_OF_BLOCKS; i++) {
+    for (int i = 0; i < N_OF_BLOCKS; i++) {
         s += h_sums[i];
     }
     /* Check result */
-    if ( s != 2*N ) {
-        printf("Check FAILED: expected %d, got %d\n", 2*N, s);
+    if (s != 2 * N) {
+        printf("Check FAILED: expected %d, got %d\n", 2 * N, s);
     } else {
         printf("Check OK: sum = %d\n", s);
     }

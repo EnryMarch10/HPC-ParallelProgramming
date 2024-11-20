@@ -60,7 +60,7 @@ typedef struct {
  * Read a PGM file from |f|. This function is not very robust; it may
  * fail on valid PGM images.
  */
-void read_pgm( FILE *f, img_t* img )
+void read_pgm(FILE *f, img_t* img)
 {
     char buf[2048];
     const size_t BUFSIZE = sizeof(buf);
@@ -88,10 +88,10 @@ void read_pgm( FILE *f, img_t* img )
         exit(EXIT_FAILURE);
     }
     /* Get the binary data */
-    img->bmap = (unsigned char*)malloc((img->width)*(img->height));
-    nread = fread(img->bmap, 1, (img->width)*(img->height), f);
-    if ( (img->width)*(img->height) != nread ) {
-        fprintf(stderr, "FATAL: error reading input: expecting %d bytes, got %d\n", (img->width)*(img->height), nread);
+    img->bmap = (unsigned char *) malloc(img->width * img->height);
+    nread = fread(img->bmap, 1, img->width * img->height, f);
+    if (img->width * img->height != nread) {
+        fprintf(stderr, "FATAL: error reading input: expecting %d bytes, got %d\n", img->width * img->height, nread);
         exit(EXIT_FAILURE);
     }
 }
@@ -99,20 +99,20 @@ void read_pgm( FILE *f, img_t* img )
 /**
  * Write image |img| to |f|
  */
-void write_pgm( FILE *f, const img_t* img )
+void write_pgm(FILE *f, const img_t* img)
 {
     fprintf(f, "P5\n");
     fprintf(f, "# produced by cuda-image-rotate.cu\n");
     fprintf(f, "%d %d\n", img->width, img->height);
     fprintf(f, "%d\n", img->maxgrey);
-    fwrite(img->bmap, 1, (img->width)*(img->height), f);
+    fwrite(img->bmap, 1, img->width * img->height, f);
 }
 
 /**
  * Free the memory allocated by image |img|, and set the additional
  * info to invalid values.
  */
-void free_pgm( img_t *img )
+void free_pgm(img_t *img)
 {
     img->width = img->height = img->maxgrey = -1;
     free(img->bmap);
@@ -125,13 +125,13 @@ void free_pgm( img_t *img )
  * |n|.
  */
 __global__
-void rotate( unsigned char *orig, unsigned char *rotated, int n )
+void rotate(unsigned char *orig, unsigned char *rotated, int n)
 {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
 
-    if (x<n && y<n) {
-        rotated[n*x + (n - 1 - y)] = orig[n*y + x];
+    if (x < n && y < n) {
+        rotated[n * x + (n - 1 - y)] = orig[n * y + x];
     }
 }
 
@@ -140,7 +140,7 @@ void rotate( unsigned char *orig, unsigned char *rotated, int n )
  * is a multiple of BLKDIM.
  */
 __global__
-void rotate_shared( unsigned char *orig, unsigned char *rotated, int n )
+void rotate_shared(unsigned char *orig, unsigned char *rotated, int n)
 {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -148,8 +148,8 @@ void rotate_shared( unsigned char *orig, unsigned char *rotated, int n )
     const int local_y = threadIdx.y;
     __shared__ unsigned char buf[BLKDIM][BLKDIM];
 
-    if (x<n && y<n) {
-        buf[local_x][BLKDIM-1-local_y] = orig[n*y+x];
+    if (x < n && y < n) {
+        buf[local_x][BLKDIM - 1 - local_y] = orig[n * y + x];
         __syncthreads();
 
         const int dest_x = (gridDim.y - 1 - blockIdx.y) * BLKDIM + threadIdx.x;
@@ -158,13 +158,13 @@ void rotate_shared( unsigned char *orig, unsigned char *rotated, int n )
     }
 }
 
-int main( int argc, char* argv[] )
+int main(int argc, char* argv[])
 {
     img_t img;
     unsigned char *d_orig, *d_new, *tmp;
     int nrotations = 1001;
 
-    if ( argc > 2 ) {
+    if (argc > 2) {
         fprintf(stderr, "Usage: %s nrotations < input > output\n", argv[0]);
         return EXIT_FAILURE;
     }
@@ -175,7 +175,7 @@ int main( int argc, char* argv[] )
 
     read_pgm(stdin, &img);
 
-    if ( img.width != img.height ) {
+    if (img.width != img.height) {
         fprintf(stderr, "FATAL: width (%d) and height (%d) of the input image must be equal\n", img.width, img.height);
         return EXIT_FAILURE;
     }
@@ -188,35 +188,34 @@ int main( int argc, char* argv[] )
     }
 
     /* Allocate buffers on the device */
-    const size_t size = n*n;
+    const size_t size = n * n;
 
     /* The cudaSafeCall() and cudaCheckError() macros are defined in
        hpc.h and can be used to check the results of CUDA operations
        and abort immediately if an error occur. To disable these
        checks, #define NO_CUDA_CHECK_ERROR _before_ including hpc.h */
-    cudaSafeCall( cudaMalloc((void **)&d_orig, size) );
-    cudaSafeCall( cudaMalloc((void **)&d_new, size) );
+    cudaSafeCall(cudaMalloc((void **) &d_orig, size));
+    cudaSafeCall(cudaMalloc((void **) &d_new, size));
 
     /* Copy image to the device */
-    cudaSafeCall( cudaMemcpy(d_orig, img.bmap, size, cudaMemcpyHostToDevice) );
+    cudaSafeCall(cudaMemcpy(d_orig, img.bmap, size, cudaMemcpyHostToDevice));
 
     /* Define block and grid sizes */
     const dim3 block(BLKDIM, BLKDIM);
-    const dim3 grid((img.width + BLKDIM - 1)/BLKDIM, (img.height + BLKDIM - 1)/BLKDIM);
+    const dim3 grid((img.width + BLKDIM - 1) / BLKDIM, (img.height + BLKDIM - 1) / BLKDIM);
 
     fprintf(stderr, "\nPerforming %d rotations (img size %dx%d)\n\n", nrotations, img.width, img.height);
 
     double tstart = hpc_gettime();
-    for (int i=0; i<nrotations; i++) {
-        rotate<<< grid, block >>>( d_orig, d_new, n );
+    for (int i = 0; i < nrotations; i++) {
+        rotate<<<grid, block>>>(d_orig, d_new, n);
         cudaCheckError(); /* Check whether the kernel completed succesfully */
         tmp = d_orig; d_orig = d_new; d_new = tmp;
     }
     cudaDeviceSynchronize();
     const double elapsed_noshmem = hpc_gettime() - tstart;
-    const double Mpixels = ((double)img.width * img.height * nrotations)/1.0e6;
-    fprintf(stderr, "No shmem: elapsed time %f s = %.2f Mpixels/s\n", elapsed_noshmem,
-            Mpixels/elapsed_noshmem);
+    const double Mpixels = ((double) img.width * img.height * nrotations) / 1.0e6;
+    fprintf(stderr, "No shmem: elapsed time %f s = %.2f Mpixels/s\n", elapsed_noshmem, Mpixels / elapsed_noshmem);
 
     /* Copy again image to the device, so we are sure that both
        kernels work on the same input (we should not care, since the
@@ -224,15 +223,14 @@ int main( int argc, char* argv[] )
     cudaMemcpy(d_orig, img.bmap, size, cudaMemcpyHostToDevice);
 
     tstart = hpc_gettime();
-    for (int i=0; i<nrotations; i++) {
-        rotate_shared<<< grid, block >>>( d_orig, d_new, n );
+    for (int i = 0; i < nrotations; i++) {
+        rotate_shared<<<grid, block>>>(d_orig, d_new, n);
         cudaCheckError();
         tmp = d_orig; d_orig = d_new; d_new = tmp;
     }
     cudaDeviceSynchronize();
     const double elapsed_shmem = hpc_gettime() - tstart;
-    fprintf(stderr, "Shmem   : elapsed time %f s = %.2f Mpixels/s\n", elapsed_shmem,
-            Mpixels/elapsed_shmem);
+    fprintf(stderr, "Shmem   : elapsed time %f s = %.2f Mpixels/s\n", elapsed_shmem, Mpixels / elapsed_shmem);
 
     /* Copy output to host */
     cudaMemcpy(img.bmap, d_orig, size, cudaMemcpyDeviceToHost);

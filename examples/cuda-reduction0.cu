@@ -43,7 +43,7 @@
 #define BLKDIM 1024
 #define N_OF_BLOCKS 1024
 /* N must be an integer multiple of BLKDIM */
-#define N ((N_OF_BLOCKS)*(BLKDIM))
+#define N ((N_OF_BLOCKS) * (BLKDIM))
 
 /* d_sums is an array of N_OF_BLOCKS integers that reside in device
    memory; therefore, there is no need to cudaMalloc'ate it */
@@ -57,7 +57,7 @@ int h_sums[N_OF_BLOCKS];
    d_sums[], so no race condition is possible. Note that the use of
    shared memory does not provide any advantage here, but only serves
    as a placeholder for more advanced versions of this code. */
-__global__ void sum( int *a, int n )
+__global__ void sum(int *a, int n)
 {
     __shared__ int temp[BLKDIM];
     int lindex = threadIdx.x; /* local idx (index of the thread within the block) */
@@ -67,44 +67,44 @@ __global__ void sum( int *a, int n )
     temp[lindex] = a[gindex];
     __syncthreads(); /* wait for all threads to finish the copy operation */
     /* only thread 0 computes the local sum */
-    if ( 0 == lindex ) {
+    if (lindex == 0) {
         int i, my_sum = 0;
-        for (i=0; i<blockDim.x; i++) {
+        for (i = 0; i < blockDim.x; i++) {
             my_sum += temp[i];
         }
         d_sums[bindex] = my_sum;
     }
 }
 
-int main( void ) 
+int main(void) 
 {
     int *h_a;
     int *d_a;
     int i, s=0;
-    assert( 0 == N % BLKDIM );
+    assert(N % BLKDIM == 0);
     /* Allocate space for device copies of d_a */
-    cudaMalloc((void **)&d_a, N*sizeof(int));
+    cudaMalloc((void **) &d_a, N * sizeof(int));
     /* Allocate space for host copy of the array */
-    h_a = (int*)malloc(N * sizeof(int));
+    h_a = (int *) malloc(N * sizeof(int));
     /* Set all elements of vector h_a to 2, so that we know that the
        result of the sum must be 2*N */
-    for (i=0; i<N; i++) {
+    for (i = 0; i < N; i++) {
         h_a[i] = 2;
     }
     /* Copy inputs to device */
-    cudaMemcpy(d_a, h_a, N*sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_a, h_a, N * sizeof(int), cudaMemcpyHostToDevice);
     /* Launch sum() kernel on the GPU */
     sum<<<N_OF_BLOCKS, BLKDIM>>>(d_a, N);
     /* Copy the d_sums[] array from device memory to host memory h_sums[] */
-    cudaMemcpyFromSymbol(h_sums, d_sums, N_OF_BLOCKS*sizeof(h_sums[0]));
+    cudaMemcpyFromSymbol(h_sums, d_sums, N_OF_BLOCKS * sizeof(h_sums[0]));
     /* Perform the final reduction on the CPU */
     s = 0;
-    for (i=0; i<N_OF_BLOCKS; i++) {
+    for (i = 0; i < N_OF_BLOCKS; i++) {
         s += h_sums[i];
     }
     /* Check result */
-    if ( s != 2*N ) {
-        printf("Check FAILED: Expected %d, got %d\n", 2*N, s);
+    if (s != 2 * N) {
+        printf("Check FAILED: Expected %d, got %d\n", 2 * N, s);
     } else {
         printf("Check OK: sum = %d\n", s);
     }

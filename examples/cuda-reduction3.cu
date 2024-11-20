@@ -45,14 +45,14 @@
 #define BLKDIM 1024
 
 /* Note: *result must be initially zero for this kernel to work! */
-__global__ void sum( int *a, int n, int *result )
+__global__ void sum(int *a, int n, int *result)
 {
     __shared__ int temp[BLKDIM];
     int lindex = threadIdx.x;
     int gindex = threadIdx.x + blockIdx.x * blockDim.x;
     int bsize = blockDim.x / 2;
 
-    if ( gindex < n ) {
+    if (gindex < n) {
         temp[lindex] = a[gindex];
     } else {
         temp[lindex] = 0;
@@ -62,8 +62,8 @@ __global__ void sum( int *a, int n, int *result )
     __syncthreads(); 
 
     /* All threads within the block cooperate to compute the local sum */
-    while ( bsize > 0 ) {
-        if ( lindex < bsize ) {
+    while (bsize > 0) {
+        if (lindex < bsize) {
             temp[lindex] += temp[lindex + bsize];
         }
         bsize = bsize / 2; 
@@ -72,41 +72,41 @@ __global__ void sum( int *a, int n, int *result )
         __syncthreads(); 
     }
 
-    if ( 0 == lindex ) {
+    if (lindex == 0) {
         atomicAdd(result, temp[0]);
     }
 }
 
-void init( int *v, int n )
+void init(int *v, int n)
 {
     int i;
-    for (i=0; i<n; i++) {
+    for (i = 0; i < n; i++) {
         v[i] = 2;
     }
 }
 
-int main( int argc, char *argv[] ) 
+int main(int argc, char *argv[]) 
 {
     int *h_a, result = 0;
     int *d_a, *d_result;
-    int n = 1024*512;
+    int n = 1024  * 512;
     
-    assert( (BLKDIM & (BLKDIM-1)) == 0 ); /* check if BLKDIM is a power of two using the "bit hack" from http://www.graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2 */
+    assert((BLKDIM & (BLKDIM - 1)) == 0); /* check if BLKDIM is a power of two using the "bit hack" from http://www.graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2 */
 
-    if ( argc > 1 ) {
+    if (argc > 1) {
         n = atoi(argv[1]);
     }
 
     const size_t size = n * sizeof(*h_a);
-    const int n_of_blocks = (n + BLKDIM - 1)/BLKDIM;
+    const int n_of_blocks = (n + BLKDIM - 1) / BLKDIM;
 
     /* Allocate space for host copies of array */
-    h_a = (int*)malloc(size);
+    h_a = (int *) malloc(size);
     init(h_a, n);
 
     /* Allocate space for device copies of aarray */
-    cudaMalloc((void **)&d_a, size);
-    cudaMalloc((void **)&d_result, sizeof(*d_result));
+    cudaMalloc((void **) &d_a, size);
+    cudaMalloc((void **) &d_result, sizeof(*d_result));
 
     /* Copy inputs to device */
     cudaMemcpy(d_a, h_a, size, cudaMemcpyHostToDevice);
@@ -121,14 +121,15 @@ int main( int argc, char *argv[] )
     cudaMemcpy(&result, d_result, sizeof(result), cudaMemcpyDeviceToHost);
 
     /* Check result */
-    const int expected = 2*n;
-    if ( result != expected ) {
+    const int expected = 2 * n;
+    if (result != expected) {
         printf("Check FAILED: got %d, expected %d\n", result, expected);
     } else {
         printf("Check OK: sum = %d\n", result);
     }
     /* Cleanup */
     free(h_a);
-    cudaFree(d_a); cudaFree(d_result);
+    cudaFree(d_a);
+    cudaFree(d_result);
     return EXIT_SUCCESS;
 }

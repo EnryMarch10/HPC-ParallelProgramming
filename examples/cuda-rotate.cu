@@ -43,7 +43,7 @@ __global__ void rotate_kernel(float* px, float *py, int n, int angle)
 {
     const int index = blockIdx.x * blockDim.x + threadIdx.x;
     angle = angle % PLANE_ANG; /* ensures 0 <= angle <= 359 */
-    if (index < n ) {
+    if (index < n) {
         /* compute coordinates (prx, pry) of the rotated point (px[i], py[i]) */
         const float prx = px[index] * c_cos[angle] - py[index]*c_sin[angle];
         const float pry = py[index] * c_cos[angle] + px[index]*c_sin[angle];
@@ -52,20 +52,20 @@ __global__ void rotate_kernel(float* px, float *py, int n, int angle)
     }
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     float sin_table[PLANE_ANG], cos_table[PLANE_ANG];
     float *h_px, *h_py; /* coordinates in host memory */
     float *d_px, *d_py; /* coordinates in device memory */
     int i, a;
-    const size_t NPOINTS = 1024*1024;
+    const size_t NPOINTS = 1024 * 1024;
     const int ANGLE = 72;
 
     /* pre-compute the table of sin and cos; note that sin() and cos()
        expect the angle to be in radians */
-    for (a=0; a<PLANE_ANG; a++) {
-        sin_table[a] = sin(a * M_PI / 180.0f );
-        cos_table[a] = cos(a * M_PI / 180.0f );
+    for (a = 0; a < PLANE_ANG; a++) {
+        sin_table[a] = sin(a * M_PI / 180.0f);
+        cos_table[a] = cos(a * M_PI / 180.0f);
     }
 
     /* Ship the pre-computed tables to constant memory */
@@ -75,36 +75,36 @@ int main(int argc, char* argv[])
     const size_t SIZE = NPOINTS * sizeof(*h_px);
 
     /* Create NPOINTS instances of the point (1,0) */
-    h_px = (float*)malloc( SIZE );
-    h_py = (float*)malloc( SIZE );
-    for (i=0; i<NPOINTS; i++) {
+    h_px = (float *) malloc(SIZE);
+    h_py = (float *) malloc(SIZE);
+    for (i = 0; i < NPOINTS; i++) {
         h_px[i] = 1.0f;
         h_py[i] = 0.0f;
     }
 
     /* Copy the points to device memory */
-    cudaMalloc((void**)&d_px, SIZE);
-    cudaMalloc((void**)&d_py, SIZE);
+    cudaMalloc((void **) &d_px, SIZE);
+    cudaMalloc((void **) &d_py, SIZE);
     cudaMemcpy(d_px, h_px, SIZE, cudaMemcpyHostToDevice);
     cudaMemcpy(d_py, h_py, SIZE, cudaMemcpyHostToDevice);
 
     /* Rotate all points by 72 degrees counterclockwise on the GPU */
-    rotate_kernel<<< (NPOINTS + BLKDIM-1)/BLKDIM, BLKDIM >>>(d_px, d_py, NPOINTS, ANGLE);
+    rotate_kernel<<<(NPOINTS + BLKDIM - 1) / BLKDIM, BLKDIM>>>(d_px, d_py, NPOINTS, ANGLE);
 
     /* Copy result back to host memory */
     cudaMemcpy(h_px, d_px, SIZE, cudaMemcpyDeviceToHost);
     cudaMemcpy(h_py, d_py, SIZE, cudaMemcpyDeviceToHost);
 
     /* Check results */
-    for (i=0; i<NPOINTS; i++) {
-        if ( fabs(h_px[i] - cos_table[ANGLE]) > 1e-5 ||
-             fabs(h_py[i] - sin_table[ANGLE]) > 1e-5 ) {
+    for (i = 0; i < NPOINTS; i++) {
+        if (fabs(h_px[i] - cos_table[ANGLE]) > 1e-5 ||
+            fabs(h_py[i] - sin_table[ANGLE]) > 1e-5) {
             fprintf(stderr, "Test failed: (h_px[%d], h_py[%d]) expected (%f, %f) but got (%f, %f)\n",
                     i, i, cos_table[ANGLE], sin_table[ANGLE], h_px[i], h_py[i]);
             break;
         }
     }
-    if ( i == NPOINTS ) {
+    if (i == NPOINTS) {
         printf("Check OK\n");
     }
 
