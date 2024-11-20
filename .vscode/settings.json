@@ -8,5 +8,6 @@
         "stdlib.h": "c",
         "hpc.h": "c",
         "pgm.h": "c"
-    }
+    },
+    "C_Cpp.default.compilerPath": "/usr/bin/gcc"
 }
