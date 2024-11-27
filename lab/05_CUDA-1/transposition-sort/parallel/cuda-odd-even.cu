@@ -68,7 +68,7 @@ void odd_even_sort(int *v, int n)
     cudaSafeCall(cudaMemcpy(d_v, v, SIZE, cudaMemcpyHostToDevice));
 
     for (int phase = 0; phase < n; phase++) {
-        odd_even_step<<<NBLOCKS, BLKDIM> > >(d_v, n, phase);
+        odd_even_step<<<NBLOCKS, BLKDIM>>>(d_v, n, phase);
         cudaCheckError(); // To synchronize the execution
     }
 
