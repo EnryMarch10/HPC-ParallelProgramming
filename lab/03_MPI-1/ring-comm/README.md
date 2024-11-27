@@ -1,4 +1,4 @@
-# Ring communication with MPI
+# Ring communication
 
 Write a MPI program [mpi-ring.c](base/mpi-ring.c) that implements a message
 exchange along a ring.

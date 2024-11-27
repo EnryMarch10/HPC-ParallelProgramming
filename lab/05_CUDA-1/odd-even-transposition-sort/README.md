@@ -1,4 +1,4 @@
-# Odd-even sort
+# Odd-even transposition sort
 
 The _Odd-Even sort_ algorithm is a variant of BubbleSort, and sorts an array of $n$ elements in sequential time $O(n^2)$.
 Although inefficient, odd-even sort is easily parallelizable; indeed, we have discussed both an OpenMP and an MPI version.

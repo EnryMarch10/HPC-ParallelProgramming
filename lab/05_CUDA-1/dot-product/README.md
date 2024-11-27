@@ -1,4 +1,4 @@
-# HPC - Dot product
+# Dot product
 
 ## Familiarize with the environment
 
