@@ -1,24 +1,3 @@
-/****************************************************************************
- *
- * cuda-dot.cu - Dot product
- *
- * Copyright (C) 2017--2024 by Moreno Marzolla <https://www.moreno.marzolla.name/>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- ****************************************************************************/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -26,30 +5,56 @@
 
 #include "hpc.h"
 
+#define BLKDIM 1024
+
+__global__ void dot_step(const float *x, const float *y, int n, float *result)
+{
+    __shared__ float tmp[BLKDIM];
+    const int tid = threadIdx.x;
+    for (int i = tid; i < n; i += blockDim.x) {
+        tmp[tid] += x[i] * y[i];
+    }
+    __syncthreads();
+    if (tid == 0) {
+        *result = 0;
+        for (int i = 0; i < blockDim.x; i++) {
+            *result += tmp[i];
+        }
+    }
+}
+
 float dot(const float *x, const float *y, int n)
 {
-    /* [TODO] modify this function so that (part of) the computation
-       is executed on the GPU. You may want to follow the steps
-       below. */
-
     /* Define a `float` variabile `result` in host memory */
+    float result;
 
     /* Allocate space for device copies of `x`, `y` and `result` */
+    const size_t SIZE = n * sizeof(float);
+    float *d_x;
+    float *d_y;
+    float *d_result;
+
+    cudaSafeCall(cudaMalloc((void **) &d_x, SIZE));
+    cudaSafeCall(cudaMalloc((void **) &d_y, SIZE));
+    cudaSafeCall(cudaMalloc((void **) &d_result, sizeof(float)));
 
     /* Copy `x`, `y` from host to device */
+    cudaSafeCall(cudaMemcpy(d_x, x, SIZE, cudaMemcpyHostToDevice));
+    cudaSafeCall(cudaMemcpy(d_y, y, SIZE, cudaMemcpyHostToDevice));
 
     /* Launch a suitable kernel on the GPU */
+    dot_step<<<1, BLKDIM>>>(d_x, d_y, n, d_result);
 
     /* Copy the value of `result` back to host memory */
+    cudaSafeCall(cudaMemcpy(&result, d_result, sizeof(result), cudaMemcpyDeviceToHost));
 
     /* Perform the final reduction on the CPU */
 
     /* Free device memory */
+    cudaSafeCall(cudaFree(d_x));
+    cudaSafeCall(cudaFree(d_y));
+    cudaSafeCall(cudaFree(d_result));
 
-    float result = 0.0;
-    for (int i = 0; i < n; i++) {
-        result += x[i] * y[i];
-    }
     return result;
 }
 
