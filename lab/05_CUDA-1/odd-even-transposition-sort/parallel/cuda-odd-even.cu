@@ -69,6 +69,9 @@ void odd_even_sort(int *v, int n)
 
     for (int phase = 0; phase < n; phase++) {
         odd_even_step<<<NBLOCKS, BLKDIM>>>(d_v, n, phase);
+        // Put here because this call inside cudaCheckError() could not happen in case of
+        // NO_CUDA_CHECK_ERROR marco definition with -D when compiling
+        cudaSafeCall(cudaDeviceSynchronize());
         cudaCheckError(); // To synchronize the execution
     }
 
