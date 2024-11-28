@@ -44,6 +44,7 @@ float dot(const float *x, const float *y, int n)
 
     /* Launch a suitable kernel on the GPU */
     dot_step<<<1, BLKDIM>>>(d_x, d_y, n, d_result);
+    cudaCheckError();
 
     /* Copy the value of `result` back to host memory */
     cudaSafeCall(cudaMemcpy(&result, d_result, sizeof(result), cudaMemcpyDeviceToHost));
