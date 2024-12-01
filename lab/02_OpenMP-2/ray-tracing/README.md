@@ -32,7 +32,7 @@ works using Whitted’s recursive algorithm (T. Whitted, *An improved illuminati
 June 1980, 343–349. [https://doi.org/10.1145/358876.358882](https://doi.org/10.1145/358876.358882)).
 Refer to figure below.
 
-![Figure 2: Recursive ray tracer](img/omp-c-ray.svg)
+![Figure 2: Recursive ray tracer](img/omp-c-ray.png)
 
 *Figure 2: Recursive ray tracer*
 

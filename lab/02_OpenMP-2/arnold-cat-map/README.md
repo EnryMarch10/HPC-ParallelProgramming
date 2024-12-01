@@ -16,7 +16,7 @@ $(N-1, N-1)$ is bottom right, so that the bitmap can be encoded as a regular two
 The transformation corresponds to a linear “stretching” of the image, that is then broken down into triangles that are rearranged
 as shown in Figure 1.
 
-![Figure 2: Arnold's cat map transitions](img/cat-map.svg)
+![Figure 2: Arnold's cat map transitions](img/cat-map-schema.png)
 
 Arnold’s cat map has interesting properties. Let $C^k(x, y)$ be the $k$-th iterate of $C$, i.e.:
 

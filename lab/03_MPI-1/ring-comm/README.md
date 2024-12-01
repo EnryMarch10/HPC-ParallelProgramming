@@ -16,7 +16,7 @@ For example, if $K = 2$ and there are $P = 4$ processes, the communication shoul
 whose content is the number reported above them).
 There are $K = 2$ turns of the ring; at the end, process $0$ receives and prints 8.
 
-![Figure 1: Ring communication](img/mpi-ring.svg)
+![Figure 1: Ring communication](img/mpi-ring.png)
 
 *Figure 1: Ring communication*
 

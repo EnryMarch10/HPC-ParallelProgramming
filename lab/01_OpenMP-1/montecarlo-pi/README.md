@@ -4,7 +4,7 @@ The file [omp-pi.c](base/omp-pi.c) implements a serial *Monte Carlo* algorithm
 for computing the approximate value of $\pi$. Monte Carlo algorithms use pseudo-random numbers to evaluate some function of
 interest.
 
-![Figure 1: Monte Carlo computation of the value of $\pi$](img/pi_Monte_Carlo.svg)
+![Figure 1: Monte Carlo computation of the value of $\pi$](img/pi_Monte_Carlo.png)
 
 *Figure 1: Monte Carlo computation of the value of $\pi$.*
 

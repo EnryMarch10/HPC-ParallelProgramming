@@ -47,7 +47,7 @@ The algorithm works as follows:
 4. When all threads have completed the previous step (hint: use `__syncthreads()`), thread 0 performs the sum-reduction of `tmp[]`
    and computes the final result that can be transferred back to the host.
 
-![Figure 1](img/cuda-dot.svg)
+![Figure 1](img/cuda-dot.png)
 
 Your program must work correctly for any value of $n$, even if it is not a multiple of _BLKDIM_.
 

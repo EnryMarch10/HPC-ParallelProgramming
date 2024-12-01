@@ -36,7 +36,7 @@ For example, with $P = 15$ you get the communication pattern shown in *Figure 1*
 arrows indicate point-to-point communications, numbers indicate the rank of processes.
 The procedure above should work correctly for any $P$.
 
-![Figure 1: Broadcast tree with $P = 15$ processes](img/mpi-my-bcast.svg)
+![Figure 1: Broadcast tree with $P = 15$ processes](img/mpi-my-bcast.png)
 
 *Figure 1: Broadcast tree with $P = 15$ processes*
 

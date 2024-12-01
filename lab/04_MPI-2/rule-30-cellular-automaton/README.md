@@ -9,13 +9,12 @@ and on the current state of the left and right neighbors.
 We assume cyclic boundary conditions, so that the neighbors of $x[0]$ are $x[N-1]$ and $x[1]$, and the neighbors of $x[N-1]$ are
 $x[N-2]$ and $x[0]$ (*Figure 1*).
 
-![Figure 1: Rule 30 CA](img/rule30.svg)
+![Figure 1: Rule 30 CA](img/rule30.png)
 
 *Figure 1: Rule 30 CA*
 
 Given the current values $pqr$ of three adjacent cells, the new value $q'$ of the cell in the middle is computed according to
 Table 1.
-
 
 *Table 1: Rule 30 (■ = 1, □ = 0):*
 
@@ -48,7 +47,7 @@ shell, a highly poisonous marine mollusk that can be found in tropical seas (*Fi
 The goal of this exercise is to parallelize the serial program using MPI, so that the computation of each step is distributed
 across MPI processes. The program should operate as follows (see Figure 4 and also [this document](base/mpi-rule30.pdf)):
 
-![Figure 4: Parallelization of the Rule 30 CA](img/rule30-parallelization.svg)
+![Figure 4: Parallelization of the Rule 30 CA](img/rule30-parallelization.png)
 
 *Figure 4: Parallelization of the Rule 30 CA*
 
@@ -84,7 +83,7 @@ MPI_Scatter(&cur[LEFT],             /* sendbuf    */
 
 (the symbols LEFT and LOCAL_LEFT are defined in the source code to improve readability).
 
-![Figure 5: Using `MPI_Sendrecv()` to exchange ghost cells](img/rule30-sendrecv.svg)
+![Figure 5: Using `MPI_Sendrecv()` to exchange ghost cells](img/rule30-sendrecv.png)
 
 *Figure 5: Using `MPI_Sendrecv()` to exchange ghost cells*
 

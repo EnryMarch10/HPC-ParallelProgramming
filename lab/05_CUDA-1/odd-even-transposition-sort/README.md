@@ -9,7 +9,7 @@ During even steps, array elements in even positions are compared with the next e
 During odd steps, elements in odd position are compared (and possibly swapped) with their successors.
 See *Figure 1*.
 
-![Figure 1: Odd-Even Sort](img/cuda-odd-even.svg)
+![Figure 1: Odd-Even Sort](img/cuda-odd-even.png)
 
 *Figure 1: Odd-Even Sort*
 

@@ -21,7 +21,7 @@ $$
 
 See *Figure 1* for some examples.
 
-![Figure 1: Computation of the new state of the central cell of a block of size $3 \times 3$](img/cuda-anneal1.svg)
+![Figure 1: Computation of the new state of the central cell of a block of size $3 \times 3$](img/cuda-anneal1.png)
 
 To simulate synchronous, concurrent updates of all cells, two domains must be used.
 The state of a cell is read from the "current" domain, and new values are written to the "next" domain.
@@ -64,7 +64,7 @@ Some suggestions:
   Before making any computation, each thread must verify that $1 \leq i \leq H$, $1 \leq j \leq W$, so that excess threads are
   deactivated.
 
-![Figure 3: Initializing the ghost area](img/cuda-anneal2.svg)
+![Figure 3: Initializing the ghost area](img/cuda-anneal2.png)
 
 ## Using local memory
 
@@ -90,7 +90,7 @@ const int li = 1 + threadIdx.y;
 const int lj = 1 + threadIdx.x;
 ```
 
-![Figure 4: Copying data from global to shared memory](img/cuda-anneal3.svg)
+![Figure 4: Copying data from global to shared memory](img/cuda-anneal3.png)
 
 There are several ways to fill the ghost area, all of them rather cumbersome and potentially inefficient.
 The solution proposed below is one of them; other possibilities exist.
@@ -105,7 +105,7 @@ buf[li][lj] = *IDX(cur, ext_width, gi, gj);
 
 where `ext_width = (W + 2)` is the width of the domain including the ghost area.
 
-![Figure 5: Active threads while filling the shared memory](img/cuda-anneal4.svg)
+![Figure 5: Active threads while filling the shared memory](img/cuda-anneal4.png)
 
 Filling the ghost area can be done as follows (see *Figure 5*):
 

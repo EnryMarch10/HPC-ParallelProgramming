@@ -4,7 +4,7 @@ The file [mpi-pi.c](base/mpi-pi.c) contains a serial program for computing the a
 algorithm.
 Monte Carlo algorithms use pseudorandom numbers to compute an approximation of some quantity of interest.
 
-![Figure 1: Monte Carlo computation of the value of $\pi$](img/pi_Monte_Carlo.svg)
+![Figure 1: Monte Carlo computation of the value of $\pi$](img/pi_Monte_Carlo.png)
 
 *Figure 1: Monte Carlo computation of the value of $\pi$*
 
