@@ -9,6 +9,20 @@
 typedef unsigned char cell_t;
 
 /**
+ * Fill ghost cells in device memory. This kernel must be launched
+ * with one thread only.
+ */
+__global__ void fill_ghost(cell_t *cur, int ext_n)
+{
+    const int LEFT_GHOST = 0;
+    const int LEFT = 1;
+    const int RIGHT_GHOST = ext_n - 1;
+    const int RIGHT = RIGHT_GHOST - 1;
+    cur[RIGHT_GHOST] = cur[LEFT];
+    cur[LEFT_GHOST] = cur[RIGHT];
+}
+
+/**
  * Given the current state of the CA, compute the next state.  This
  * version requires that the `cur` and `next` arrays are extended with
  * ghost cells; therefore, `ext_n` is the length of `cur` and `next`
@@ -22,18 +36,31 @@ typedef unsigned char cell_t;
  * +---+-------------------------+---+
  *
  */
-__global__ void rule30_step(cell_t *cur, cell_t *next, int ext_n) {
-    const int i = 1 + threadIdx.x + blockIdx.x * blockDim.x;
+__global__ void rule30_step(cell_t *cur, cell_t *next, int n, int ext_n) {
+    __shared__ int cache[BLKDIM + 2];
 
-    if (i < ext_n - 1) {
-        const cell_t left   = cur[i - 1];
-        const cell_t center = cur[i];
-        const cell_t right  = cur[i + 1];
-        next[i] =
-            ( left && !center && !right) ||
-            (!left && !center &&  right) ||
-            (!left &&  center && !right) ||
-            (!left &&  center &&  right);
+    const int l_idx = 1 + threadIdx.x;
+    const int g_idx = 1 + threadIdx.x + blockIdx.x * blockDim.x;
+
+    const int remaining = n - blockIdx.x * blockDim.x;
+    const int my_dim = remaining >= BLKDIM ? BLKDIM : remaining;
+
+    if (l_idx == 1) { /* same as if I am first thread of block */
+        cache[0] = cur[g_idx - 1];
+        cache[my_dim + 1] = cur[g_idx + my_dim];
+    }
+    if (g_idx < ext_n - 1) {
+        cache[l_idx] = cur[g_idx];
+        __syncthreads();
+        /* I decided not to save the following variables in local variables,
+           because these could be registers (better option) or global memory
+           (worst option). It should be checked which option is better.
+         */
+        next[g_idx] =
+            ( cache[l_idx - 1] && !cache[l_idx] && !cache[l_idx + 1]) ||
+            (!cache[l_idx - 1] && !cache[l_idx] &&  cache[l_idx + 1]) ||
+            (!cache[l_idx - 1] &&  cache[l_idx] && !cache[l_idx + 1]) ||
+            (!cache[l_idx - 1] &&  cache[l_idx] &&  cache[l_idx + 1]);
     }
 }
 
@@ -86,10 +113,7 @@ int main(int argc, char *argv[])
 
     const int ext_width = width + 2;
     const size_t ext_size = ext_width * sizeof(*cur); /* includes ghost cells */
-    const int LEFT_GHOST = 0;
-    const int LEFT = 1;
-    const int RIGHT_GHOST = ext_width - 1;
-    const int RIGHT = RIGHT_GHOST - 1;
+
     /* Create the output file */
     out = fopen(outname, "w");
     if (!out) {
@@ -112,21 +136,28 @@ int main(int argc, char *argv[])
     cudaSafeCall(cudaMalloc((void **) &d_cur, ext_width));
     cudaSafeCall(cudaMalloc((void **) &d_next, ext_width));
 
+    cudaSafeCall(cudaMemcpy(d_cur, cur, ext_width, cudaMemcpyHostToDevice));
+
+    const int GRID = (width + BLKDIM - 1) / BLKDIM;
+
     /* Evolve the CA */
     for (int s = 0; s < steps; s++) {
         /* Dump the current state */
         dump_state(out, cur, ext_width);
 
-        /* Fill ghost cells */
-        cur[RIGHT_GHOST] = cur[LEFT];
-        cur[LEFT_GHOST] = cur[RIGHT];
-
-        cudaSafeCall(cudaMemcpy(d_cur, cur, ext_width, cudaMemcpyHostToDevice));
+        fill_ghost<<<1, 1>>>(d_cur, ext_width);
+        cudaCheckError();
+    
         /* Compute next state */
-        rule30_step<<<(width + BLKDIM - 1) / BLKDIM, BLKDIM>>>(d_cur, d_next, ext_width);
+        rule30_step<<<GRID, BLKDIM>>>(d_cur, d_next, width, ext_width);
         cudaCheckError();
 
         cudaSafeCall(cudaMemcpy(cur, d_next, ext_width, cudaMemcpyDeviceToHost));
+
+        /* swap d_cur and d_next */
+        cell_t *d_tmp = d_cur;
+        d_cur = d_next;
+        d_next = d_tmp;
     }
 
     cudaSafeCall(cudaFree(d_cur));
