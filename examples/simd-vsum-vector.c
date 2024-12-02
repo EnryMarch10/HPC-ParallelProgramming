@@ -50,7 +50,7 @@ float vsum_vector(const float *v, int n)
 {
     v4f vs = {0.0f, 0.0f, 0.0f, 0.0f};
     float ss = 0.0;
-    const v4f *vv = (v4f*)v;
+    const v4f *vv = (v4f *) v;
     int i;
     for (i = 0; i < n - VLEN + 1; i += VLEN) {
         vs += *vv;
