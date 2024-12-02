@@ -146,7 +146,7 @@ void map_levels(PGM_image *img, int low, int high)
     assert(width % VLEN == 0);
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width - VLEN + 1; j += VLEN) {
-            v4i *pixels = (v4i*) (bmap + i * width + j);
+            v4i *pixels = (v4i *) (bmap + i * width + j);
             const v4i mask_black = (*pixels < low);
             const v4i mask_white = (*pixels > high);
             const v4i mask_map = ~(mask_black | mask_white);
