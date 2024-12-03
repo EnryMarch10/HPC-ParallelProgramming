@@ -28,7 +28,7 @@ float serial_dot(const float *x, const float *y, int n)
 /* Same as above, but using the vector datatype of GCC */
 float simd_dot(const float *x, const float *y, int n)
 {
-    float r = 0.0;
+    double r = 0.0;
     vxf vr = {0.0f};
     vxf *vx = (vxf *) x;
     vxf *vy = (vxf *) y;
