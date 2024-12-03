@@ -60,7 +60,7 @@ the previous command); you should see something like:
 simd-dot.c:157:5: note: reduction: unsafe fp math optimization: r_17 = _9 + r_20;
 ```
 
-that refers to the "for" loop of the `scalar_dot()` function. The message reports that the instructions:
+that refers to the "for" loop of the `serial_dot()` function. The message reports that the instructions:
 
 ```C
 r += x[i] * y[i];
