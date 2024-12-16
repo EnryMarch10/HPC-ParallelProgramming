@@ -1,30 +1,11 @@
-/****************************************************************************
- *
- * cuda-cat-map.cu - Arnold's cat map
- *
- * Copyright (C) 2016--2024 Moreno Marzolla <https://www.moreno.marzolla.name/>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- ****************************************************************************/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
 #include "hpc.h"
+
+#define BLKDIM 32
 
 typedef struct {
     int width;   /* Width of the image (in pixels) */
@@ -140,6 +121,23 @@ void free_pgm(PGM_image *img)
 }
 
 
+__global__ void cat_map_iter_k(unsigned char *cur, unsigned char *next, int N, int k)
+{
+    const int y = blockIdx.y * blockDim.y + threadIdx.y;
+    const int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int x_cur = x, y_cur = y, x_next, y_next;
+
+    if (x < N && y < N) {
+        while (k--) {
+            x_next = (2 * x_cur + y_cur) % N;
+            y_next = (x_cur + y_cur) % N;
+            x_cur = x_next;
+            y_cur = y_next;
+        }
+        next[x_next + y_next * N] = cur[x + y * N];
+    }
+}
+
 /**
  * Compute the `k`-th iterate of the cat map for image `img`. The
  * width and height of the input image must be equal. This function
@@ -156,28 +154,24 @@ void cat_map(PGM_image *img, int k)
 {
     const int N = img->width;
     const size_t size = N * N * sizeof(img->bmap[0]);
-
-    /* [TODO] Modify the body of this function to allocate device memory,
-       do the appropriate data transfer, and launch a kernel */
     unsigned char *cur = img->bmap;
-    unsigned char *next = (unsigned char *) malloc(size);
+    unsigned char *d_cur;
+    cudaSafeCall(cudaMalloc((void **) &d_cur, size));
+    unsigned char *d_next;
+    cudaSafeCall(cudaMalloc((void **) &d_next, size));
 
-    assert(next != NULL);
-    for (int i = 0; i < k; i++) {
-        for (int y = 0; y < N; y++) {
-            for (int x = 0; x < N; x++) {
-                int xnext = (2 * x + y) % N;
-                int ynext = (x + y) % N;
-                next[xnext + ynext * N] = cur[x + y * N];
-            }
-        }
-        /* Swap old and new */
-        unsigned char *tmp = cur;
-        cur = next;
-        next = tmp;
-    }
-    img->bmap = cur;
-    free(next);
+    cudaSafeCall(cudaMemcpy(d_cur, cur, size, cudaMemcpyHostToDevice));
+
+    dim3 grid((N + BLKDIM - 1) / BLKDIM, (N + BLKDIM - 1) / BLKDIM);
+    dim3 block(BLKDIM, BLKDIM);
+
+    cat_map_iter_k<<<grid, block>>>(d_cur, d_next, N, k);
+    cudaCheckError();
+
+    cudaSafeCall(cudaMemcpy(cur, d_next, size, cudaMemcpyDeviceToHost));
+
+    cudaSafeCall(cudaFree(d_cur));
+    cudaSafeCall(cudaFree(d_next));
 }
 
 int main(int argc, char *argv[])

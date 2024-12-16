@@ -56,7 +56,7 @@ The results is printed to standard output in PGM format. For example:
 ./omp-cat-map 100 < cat1368.pgm > cat1368-100.pgm
 ```
 
-applies the cat map $k=100$ times on *cat1368.phm* and saves the result to *cat1368-100.pgm*.
+applies the cat map $k=100$ times on *cat1368.pgm* and saves the result to *cat1368-100.pgm*.
 
 To display a PGM image you might need to convert it to a different format, e.g., JPEG.
 Under Linux you can use `convert` from the [ImageMagick](https://imagemagick.org/) package:
@@ -132,7 +132,7 @@ To execute:
 Example:
 
 ```shell
-./cuda-cat-map 100 < cat1368.pgm > cat1368.100.pgm
+./cuda-cat-map 100 < cat1368.pgm > cat1368-100.pgm
 ```
 
 ## Files
