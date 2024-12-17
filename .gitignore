@@ -1,4 +1,4 @@
-## General
+### General
 
 # Special files/folders
 tmp
@@ -10,7 +10,7 @@ asm/
 lst/
 build/
 
-## Visual Studio Code
+### Visual Studio Code
 
 .vscode/*
 !.vscode/settings.json

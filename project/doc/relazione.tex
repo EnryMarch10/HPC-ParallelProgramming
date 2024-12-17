@@ -1,0 +1,131 @@
+\documentclass[12pt, a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel} % Set language to Italian
+
+\usepackage{times}
+
+\usepackage{float}
+
+\usepackage{url}
+\usepackage{xurl} % Avoids URLs to overfull \hbox
+
+\usepackage{graphicx}
+% \graphicspath{{img/}} % global configuration
+\usepackage[colorlinks=false, pdfborder={0 0 0}]{hyperref}
+
+\usepackage{tabularray}
+
+% To use listings
+\usepackage[table, svgnames]{xcolor}
+\usepackage{listings}
+
+\title{
+  Progetto di High Performance Computing 2024/2025
+}
+\author{
+  Enrico Marchionni, matr. 0001032322
+}
+\date{\today}
+
+% Package to keep track of the total number of pages
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+
+\fancypagestyle{fancy}{
+  \fancyhf{}
+  \fancyfoot[C]{\thepage\ of \pageref{LastPage}}
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0.4pt}
+}
+
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \fancyfoot[C]{\thepage\ of \pageref{LastPage}}
+  \renewcommand{\headrulewidth}{0pt}
+  \renewcommand{\footrulewidth}{0.4pt}
+}
+
+\pagestyle{fancy}
+
+\usepackage{amsthm} % to make definitions
+\newtheorem{definition}{Definition}[section] % custom environment for definitions
+\newtheorem{example}{Example}
+
+% for graphs and overlaying text
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{amsmath} % For math symbols
+
+\definecolor{C_comment_green}{rgb}{87, 166, 74}
+\definecolor{C_keyword_blue}{RGB}{86, 156, 214}
+\definecolor{C_macro_purple}{RGB}{199, 120, 221}
+\definecolor{C_function_amber}{RGB}{220, 220, 100}
+
+\lstdefinelanguage{CStyle}{
+  morekeywords={
+    for, while
+  },
+  morekeywords=[2]{ % macros
+    EOF
+  },
+  morekeywords=[3]{ % functions
+    getc, high_range, low_range, output, input_code, find_symbol_straddling_this_range, putc
+  },
+  sensitive=true,
+  morecomment=[l]//,
+  morecomment=[s]{/*}{*/},
+  morestring=[b]",
+  morestring=[b]',
+  commentstyle=\color{C_comment_green},
+  keywordstyle=\color{C_keyword_blue}\bfseries,
+  keywordstyle=[2]\color{C_macro_purple}\bfseries,
+  keywordstyle=[3]\color{C_function_amber}\bfseries,
+  stringstyle=\color{red},
+  identifierstyle=\color{black},
+  basicstyle=\ttfamily,
+  literate={->}{{\textcolor{black}{->}}}2
+            {>=}{{\textcolor{black}{>=}}}2
+            {<=}{{\textcolor{black}{<=}}}2
+            {!=}{{\textcolor{black}{!=}}}2
+            {==}{{\textcolor{black}{==}}}2,
+}
+
+\lstset{
+  basicstyle=\ttfamily,                 % Set font type
+  keywordstyle=\color{blue}\bfseries,   % Set keyword color to blue and bold
+  stringstyle=\color{red},              % Set string color to red
+  commentstyle=\color{C_comment_green}, % Set comment color to gray and italic
+  breaklines=true,                      % Enable line breaking
+  frame=single,                         % Add a frame around the code
+  numbers=left,                         % Add line numbers on the left
+  numberstyle=\tiny\color{gray},        % Style for line numbers
+  backgroundcolor=\color{lightgray!20}, % Background color
+  captionpos=b,                         % Caption position at the bottom
+  showstringspaces=false                % Don't show spaces in strings
+}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduzione}
+
+\dots
+
+\section{Versione OpenMP}
+
+\dots
+
+\section{Versione MPI/CUDA}
+
+\dots
+
+\section{Conclusioni}
+
+\dots
+
+\end{document}

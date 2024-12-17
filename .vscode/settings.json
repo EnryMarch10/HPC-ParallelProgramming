@@ -9,5 +9,18 @@
         "hpc.h": "c",
         "pgm.h": "c"
     },
-    "C_Cpp.default.compilerPath": "/usr/bin/gcc"
+    "C_Cpp.default.compilerPath": "/usr/bin/gcc",
+    "cSpell.words": [
+        "backgroundcolor",
+        "basicstyle",
+        "breaklines",
+        "captionpos",
+        "keywordstyle",
+        "lightgray",
+        "morecomment",
+        "morestring",
+        "numberstyle",
+        "showstringspaces",
+        "stringstyle"
+    ]
 }
