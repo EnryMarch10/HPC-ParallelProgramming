@@ -87,7 +87,7 @@ void free_points(points_t *points)
     points->N = points->D = -1;
 }
 
-/* Returns 1 iff |p| dominates |q| */
+/* Returns 1 if |p| dominates |q| */
 int dominates(const float *p, const float *q, int D)
 {
     /* The following loops could be merged, but the keep them separated
@@ -106,7 +106,7 @@ int dominates(const float *p, const float *q, int D)
 }
 
 /**
- * Compute the skyline of `points`. At the end, `s[i] == 1` iff point
+ * Compute the skyline of `points`. At the end, `s[i] == 1` if point
  * `i` belongs to the skyline. The function returns the number `r` of
  * points that belongs to the skyline. The caller is responsible for
  * allocating the array `s` of length at least `points->N`.

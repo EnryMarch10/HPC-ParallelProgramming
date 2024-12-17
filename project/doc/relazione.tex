@@ -61,19 +61,23 @@
 \usepackage{amsmath} % For math symbols
 
 \definecolor{C_comment_green}{rgb}{87, 166, 74}
-\definecolor{C_keyword_blue}{RGB}{86, 156, 214}
-\definecolor{C_macro_purple}{RGB}{199, 120, 221}
-\definecolor{C_function_amber}{RGB}{220, 220, 100}
+\definecolor{C_types_blue}{RGB}{30, 130, 210}
+\definecolor{C_user_types_green}{RGB}{50, 222, 156}
+\definecolor{C_directives_purple}{RGB}{140, 10, 133}
+\definecolor{C_function_amber}{RGB}{200, 180, 20}
 
 \lstdefinelanguage{CStyle}{
-  morekeywords={
-    for, while
+  morekeywords={ % types
+    int, const, float
   },
-  morekeywords=[2]{ % macros
-    EOF
+  morekeywords=[2]{ % user types
+    points_t
   },
-  morekeywords=[3]{ % functions
-    getc, high_range, low_range, output, input_code, find_symbol_straddling_this_range, putc
+  morekeywords=[3]{ % directives
+    pragma, for, if, return
+  },
+  morekeywords=[4]{ % functions
+    skyline, dominates
   },
   sensitive=true,
   morecomment=[l]//,
@@ -81,17 +85,22 @@
   morestring=[b]",
   morestring=[b]',
   commentstyle=\color{C_comment_green},
-  keywordstyle=\color{C_keyword_blue}\bfseries,
-  keywordstyle=[2]\color{C_macro_purple}\bfseries,
-  keywordstyle=[3]\color{C_function_amber}\bfseries,
+  keywordstyle=\color{C_types_blue}\bfseries,
+  keywordstyle=[2]\color{C_user_types_green}\bfseries,
+  keywordstyle=[3]\color{C_directives_purple}\bfseries,
+  keywordstyle=[4]\color{C_function_amber}\bfseries,
   stringstyle=\color{red},
-  identifierstyle=\color{black},
+  identifierstyle=\color{darkgray},
   basicstyle=\ttfamily,
   literate={->}{{\textcolor{black}{->}}}2
-            {>=}{{\textcolor{black}{>=}}}2
-            {<=}{{\textcolor{black}{<=}}}2
-            {!=}{{\textcolor{black}{!=}}}2
-            {==}{{\textcolor{black}{==}}}2,
+           {>=}{{\textcolor{black}{>=}}}2
+           {<=}{{\textcolor{black}{<=}}}2
+           {!=}{{\textcolor{black}{!=}}}2
+           {==}{{\textcolor{black}{==}}}2
+           {(}{{\textcolor{black}{(}}}1
+           {)}{{\textcolor{black}{)}}}1
+           {\{}{{\textcolor{black}{\{}}}1
+           {\}}{{\textcolor{black}{\}}}}1
 }
 
 \lstset{
@@ -115,6 +124,67 @@
 \section{Introduzione}
 
 \dots
+
+\section{Versione Seriale}
+
+L'algoritmo implementato è:
+
+\begin{lstlisting}[language=CStyle, caption={Algoritmo per il calcolo dello skyline in C}, label={lst:algoritmo_skyline_seriale}]
+int skyline(const points_t *points, int *s)
+{
+  const int D = points->D;
+  const int N = points->N;
+  const float *P = points->P;
+  int r = N;
+
+  for (int i = 0; i < N; i++) {
+    s[i] = 1;
+  }
+
+  for (int i = 0; i < N; i++) {
+    if (s[i]) {
+      for (int j = 0; j < N; j++) {
+        if (s[j] && dominates(&(P[i * D]), &(P[j * D]), D)) {
+          s[j] = 0;
+          r--;
+        }
+      }
+    }
+  }
+  return r;
+}
+\end{lstlisting}
+
+È l'algoritmo seriale proposto è tipico per soluzioni brute-force del problema dello skyline.
+Il costo computazionale dell'algoritmo in \autoref{lst:algoritmo_skyline_seriale} è in generale \(O(N^2D)\).
+Infatti il ciclo esterno viene percorso \(N\) volte, nelle quali, nel caso peggiore, vengono eseguite altrettante \(N\) operazioni
+di confronto tra \(D\) elementi (da cui \(N \times N \times D\)).
+Si può notare che \(D\) può influire anche molto nella complessità, in particolare se \(D >> N^2\).
+Nel caso in cui \(N^2 >> D\), si considera \(O(N^2)\), nel caso in cui \(D >> N^2\), \(O(D)\), nell'ultimo caso in cui
+\(D \approx N^2\) allora \(O(N^2D)\).
+
+\begin{table}[H]
+  \begin{tblr}{
+      colspec={*{3}{X[l]}},
+      width=\textwidth,
+      row{odd}={gray!15},
+      row{even}={white},
+      row{1}={bg=gray!90,fg=white},
+      colsep=4pt
+    }
+      \textbf{Caso} & \textbf{Complessità} & \textbf{Range} \\
+      Pessimo & \(\Theta(N^2D)\) & Tutti i punti sono dello skyline. \\
+      \hline
+      Medio & \(\Theta(N^2D)\) & La metà dei punti fanno parte dello skyline. \\
+      \hline
+      Ottimo & \(\Theta(ND)\) & Il primo punto analizzato domina tutti gli altri. \\
+      \hline
+  \end{tblr}
+  \caption{\label{tab:algoritmo_skyline_complessita_casi} Input data.}
+\end{table}
+
+Come si può vedere dalla \autoref{tab:algoritmo_skyline_complessita_casi} la complessità in realtà varia anche di molto in base
+all'input fornito. Fattore importante nella misura della weak scaling efficiency per esempio.
 
 \section{Versione OpenMP}
 
