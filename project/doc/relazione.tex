@@ -60,7 +60,7 @@
 \pgfplotsset{compat=1.18}
 \usepackage{amsmath} % For math symbols
 
-\definecolor{C_comment_green}{rgb}{87, 166, 74}
+\definecolor{C_comment_green}{rgb}{0.0, 0.5, 0.0}
 \definecolor{C_types_blue}{RGB}{30, 130, 210}
 \definecolor{C_user_types_green}{RGB}{50, 222, 156}
 \definecolor{C_directives_purple}{RGB}{140, 10, 133}
@@ -129,7 +129,7 @@
 
 L'algoritmo implementato è:
 
-\begin{lstlisting}[language=CStyle, caption={Algoritmo per il calcolo dello skyline in C}, label={lst:algoritmo_skyline_seriale}]
+\begin{lstlisting}[language=CStyle, caption={Algoritmo per il calcolo dello skyline in C.}, label={lst:algoritmo_skyline_seriale}]
 int skyline(const points_t *points, int *s)
 {
   const int D = points->D;
@@ -137,10 +137,12 @@ int skyline(const points_t *points, int *s)
   const float *P = points->P;
   int r = N;
 
+  /* Inizializzazione */
   for (int i = 0; i < N; i++) {
     s[i] = 1;
   }
 
+  /* Calcolo skyline */
   for (int i = 0; i < N; i++) {
     if (s[i]) {
       for (int j = 0; j < N; j++) {
@@ -188,7 +190,73 @@ all'input fornito. Fattore importante nella misura della weak scaling efficiency
 
 \section{Versione OpenMP}
 
-\dots
+Analizzando in codice in \autoref{lst:algoritmo_skyline_seriale} si può notare che:
+
+\begin{itemize}
+  \item Il ciclo di inizializzazione segue il pattern \textit{embarrassingly parallel}.
+        Quindi la sua computazione può essere svolta in modo indipendente da più processi.
+        Inoltre, dato il perfetto bilanciamento del carico, il pattern \textit{partition} può essere applicato con partizioni
+        a grana grossa, per ridurre al minimo anche l'overhead per la gestione dei thread;
+  \item Per quanto riguarda i due cicli che servono per il calcolo dello skyline invece, va considerato che c'è una dipendenza tra
+        i dati, in particolare il check di \texttt{s[i]} dipende dalla possibile assegnazione a \texttt{s[j]} nel caso in cui
+        \texttt{i = j} (oltre ai problemi di concorrenza).
+        Inoltre anche l'accesso ad \texttt{r} sarebbe una `race condition'.
+        Quindi:
+        \begin{itemize}
+          \item Per il primo problema ho scelto di parallelizzare solo il ciclo più interno. Il ciclo più esterno infatti viene
+                svolto \texttt{N} volte senza fare operazioni, quindi ha costo trascurabile, inoltre per poterlo parallelizzare
+                andrebbe modificato il codice, trovando per esempio un altro algoritmo;
+          \item Per il secondo, invece, si potrebbe usare la direttiva \textit{atomic}, ma si può anche notare che per la
+                variabile \texttt{r} può essere applicato il pattern \textit{reduction} sull'operazione di somma.
+        \end{itemize}
+        Per migliorare ulteriormente le prestazioni si deve considerare che il lavoro nel ciclo più interno per il calcolo dello
+        skyline non è bilanciato se si fa un partizionamento a grana grossa.
+        Data la diversità dei possibili input ed il possibile sbilanciamento del carico conviene fare partizionamento più fine
+        ed applicare anche il pattern \textit{master-worker}, che nonostante l'overhead più alto. Questo nella pratica favorisce
+        il bilanciamento del carico in casi in cui l'input è per sua natura molto sbilanciato nella distribuzione del carico di
+        lavoro.
+\end{itemize}
+
+\subsection{Strong Scaling Efficiency}
+
+La dimensione del problema rimane fissa.
+Il numero di core varia in \textit{p} da \({1, \dots, n}\), dove \(n\) è il numero massimo di core logici nella macchina.
+
+Per farlo ho considerato come input il file \texttt{worst-N100000-D10.in} (file generato dal programma fornito \texttt{inputgen}),
+in cui \(N = 100000\) e \(D = 10\).
+
+\subsection{Weak Scaling Efficiency}
+
+Cambia la dimensione `globale' del problema ma quella locale, per ogni core, rimane il più costante possibile.
+Il numero di core varia in \textit{p} da \({1, \dots, n}\), dove \(n\) è il numero massimo di core logici nella macchina.
+
+Per farlo ho considerato come input diversi file generati da \texttt{inputgen}, fissando \(D = 10\) e variando \(N\) in modo
+opportuno, come considerato nel seguito.
+
+In questo particolare caso pessimo, il costo computazionale è pari a \(\Theta(N^2D)\).
+Da qui posso ricavare che il lavoro per core è:
+
+\begin{equation} \label{eq:quantita_di_lavoro}
+  \frac{N^2 \cdot D}{p} = CONST
+\end{equation}
+
+In particolare in \autoref{eq:quantita_di_lavoro} il lavoro viene posto costante per ipotesi della weak scaling efficiency.
+Dobbiamo ricavare il valore di \(N\) in funzione del numero di processi.
+
+\begin{equation} \label{eq:quantita_di_lavoro_N}
+  N = \sqrt{p} \cdot \frac{CONST}{\sqrt{D}} = \sqrt{p} \cdot CONST'
+\end{equation}
+
+Quindi, da \autoref{eq:quantita_di_lavoro_N}, supponendo \(D\) costante, \(N\) può essere in pratica calcolato come:
+
+\begin{equation} \label{eq:quantita_di_lavoro_N_pratico}
+  N = \sqrt{p} \cdot N_0
+\end{equation}
+
+Dove \(N_0\) è il valore iniziale di \(N\), infatti per un singolo core si ha \(N = N_0\).
+In particolare per scegliere \(N_0\) opportuno ho calcolato \(N_0 = \frac{N}{\sqrt{p}}\), formula inversa da
+\autoref{eq:quantita_di_lavoro_N_pratico}.
+A questo punto \(N_0\) si calcola con \(N\) e \(p\) scelti uguali a quelli usati nell'ultimo test della strong scaling efficiency.
 
 \section{Versione MPI/CUDA}
 

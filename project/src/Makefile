@@ -2,12 +2,13 @@
 
 SHELL := /bin/bash
 
+INPUT := input
 SERIAL := serial
 OPENMP := omp
 MPI := mpi
 CUDA := cuda
 
-TARGETS := $(SERIAL) $(OPENMP) $(MPI) $(CUDA)
+TARGETS := $(INPUT) $(SERIAL) $(OPENMP) $(MPI) $(CUDA)
 
 DIR_BUILD := build
 DIR_BIN := $(DIR_BUILD)/bin
@@ -15,6 +16,8 @@ DIR_OBJ := $(DIR_BUILD)/obj
 
 DIRS := $(DIR_BIN) $(DIR_OBJ) $(DIR_BUILD)
 
+EXE_INPUT := inputgen
+TARGET_INPUT := $(addprefix $(DIR_BIN)/, $(EXE_INPUT))
 EXE_SERIAL := skyline
 TARGET_SERIAL := $(addprefix $(DIR_BIN)/, $(EXE_SERIAL))
 EXE_OMP := $(basename $(wildcard omp-*.c))
@@ -24,7 +27,7 @@ TARGET_MPI := $(addprefix $(DIR_BIN)/, $(EXE_MPI))
 EXE_CUDA := $(basename $(wildcard cuda-*.cu))
 TARGET_CUDA := $(addprefix $(DIR_BIN)/, $(EXE_CUDA))
 
-EXE := $(EXE_SERIAL) $(EXE_OMP) $(EXE_MPI) $(EXE_CUDA)
+EXE := $(EXE_INPUT) $(EXE_SERIAL) $(EXE_OMP) $(EXE_MPI) $(EXE_CUDA)
 
 # C
 CC = gcc
@@ -37,6 +40,9 @@ NVCFLAGS += -Wno-deprecated-gpu-targets
 NVLDLIBS += -lm
 
 all: $(TARGETS)
+
+$(INPUT): $(EXE_INPUT)
+$(EXE_INPUT): $(TARGET_INPUT)
 
 $(SERIAL): $(EXE_SERIAL)
 $(EXE_SERIAL): $(TARGET_SERIAL)
@@ -56,31 +62,45 @@ help:
 	@echo
 	@echo "Available targets:"
 	@echo
-	@echo "     help    prints this message"
-	@echo "   serial    compile serial program"
-	@echo "      omp    compile parallel OpenMP program"
-	@echo "      mpi    compile MPI program"
-	@echo "     cuda    compile CUDA program"
-	@echo "      all    compile everything (default)"
-	@echo "    clean    cleanup temporary files"
+	@echo "    help    prints this message"
+	@echo "  serial    compile serial program"
+	@echo "     omp    compile parallel OpenMP program"
+	@echo "     mpi    compile MPI program"
+	@echo "    cuda    compile CUDA program"
+	@echo "     all    compile everything (default)"
+	@echo "   clean    cleanup temporary files"
 	@echo
+
+.PRECIOUS: $(DIR_OBJ)/%.o
+
+# C, OpenMP and MPI
 
 $(DIR_BIN)/%: $(DIR_OBJ)/%.o
 	@mkdir -p $(DIR_BIN)
 	$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS)
 
-.PRECIOUS: $(DIR_OBJ)/%.o
-
 $(DIR_OBJ)/%.o: %.c hpc.h
 	@mkdir -p $(DIR_OBJ)
 	$(CC) $(CFLAGS) -c $< -o $@ $(LDLIBS)
+
+# CUDA
 
 $(DIR_BIN)/%: %.cu
 	@mkdir -p $(DIR_BIN)
 	$(NVCC) $(NVCFLAGS) $^ -o $@ $(NVLDLIBS)
 
+# INPUT
+
+$(DIR_BIN)/$(EXE_INPUT): $(DIR_OBJ)/$(EXE_INPUT).o
+	@mkdir -p $(DIR_BIN)
+	$(CC) $(CFLAGS) $^ -o $@
+
+$(DIR_OBJ)/$(EXE_INPUT).o: $(EXE_INPUT).c
+	@mkdir -p $(DIR_OBJ)
+	$(CC) $(CFLAGS) -c $^ -o $@
+
 clean:
 	-\rm -f $(addprefix $(DIR_OBJ)/, $(addsuffix .o, $(EXE))) $(addprefix $(DIR_BIN)/, $(EXE))
 	-\rm -df $(DIRS)
 
-.PHONY: help all clean $(TARGETS) $(EXE)
+.PHONY: all help clean $(TARGETS) $(EXE)
