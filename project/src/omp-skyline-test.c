@@ -1,24 +1,3 @@
-/****************************************************************************
- *
- * skyline.c - Serial implementaiton of the skyline operator
- *
- * Copyright (C) 2024 Moreno Marzolla
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- ****************************************************************************/
-
 #if _XOPEN_SOURCE < 600
 #define _XOPEN_SOURCE 600
 #endif
@@ -90,19 +69,16 @@ void free_points(points_t *points)
 /* Returns 1 if |p| dominates |q| */
 int dominates(const float *p, const float *q, int D)
 {
-    /* The following loops could be merged, but the keep them separated
-       for the sake of readability */
+    int greater = 0;
     for (int k = 0; k < D; k++) {
         if (p[k] < q[k]) {
             return 0;
         }
-    }
-    for (int k = 0; k < D; k++) {
-        if (p[k] > q[k]) {
-            return 1;
+        if (!greater && p[k] > q[k]) {
+            greater = 1;
         }
     }
-    return 0;
+    return greater;
 }
 
 /**
@@ -118,12 +94,17 @@ int skyline(const points_t *points, int *s)
     const float *P = points->P;
     int r = N;
 
+#pragma omp parallel default(none) shared(P, N, D, s, r)
+{
+#pragma omp for
     for (int i = 0; i < N; i++) {
         s[i] = 1;
     }
 
     for (int i = 0; i < N; i++) {
         if (s[i]) {
+#pragma omp barrier
+#pragma omp for schedule(runtime) reduction(+:r)
             for (int j = 0; j < N; j++) {
                 if (s[j] && dominates(&(P[i * D]), &(P[j * D]), D)) {
                     s[j] = 0;
@@ -132,6 +113,7 @@ int skyline(const points_t *points, int *s)
             }
         }
     }
+}
     return r;
 }
 

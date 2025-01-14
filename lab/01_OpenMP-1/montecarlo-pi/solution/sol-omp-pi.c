@@ -80,7 +80,7 @@ unsigned int generate_points(unsigned int n)
         const int my_id = omp_get_thread_num();
         unsigned int my_seed = 17 + 19 * my_id;
 #pragma omp for reduction(+:n_inside)
-        for (int i=0; i<n; i++) {
+        for (int i = 0; i < n; i++) {
             /* Generate two random values in the range [-1, 1] */
             const double x = (2.0 * rand_r(&my_seed) / (double) RAND_MAX) - 1.0;
             const double y = (2.0 * rand_r(&my_seed) / (double) RAND_MAX) - 1.0;

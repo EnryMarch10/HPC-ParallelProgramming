@@ -83,7 +83,7 @@ void read_pgm(FILE *f, img_t* img)
     /* get maxgrey; must be less than or equal to 255 */
     s = fgets(buf, BUFSIZE, f);
     sscanf(s, "%d", &(img->maxgrey));
-    if ( img->maxgrey > 255 ) {
+    if (img->maxgrey > 255) {
         fprintf(stderr, "FATAL: maxgray > 255 (%d)\n", img->maxgrey);
         exit(EXIT_FAILURE);
     }
@@ -124,8 +124,7 @@ void free_pgm(img_t *img)
  * the new image goes to |rotated|. This kernel works for any value of
  * |n|.
  */
-__global__
-void rotate(unsigned char *orig, unsigned char *rotated, int n)
+__global__ void rotate(unsigned char *orig, unsigned char *rotated, int n)
 {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -139,8 +138,7 @@ void rotate(unsigned char *orig, unsigned char *rotated, int n)
  * Same as above, using shared memory. This kernel requires that |n|
  * is a multiple of BLKDIM.
  */
-__global__
-void rotate_shared(unsigned char *orig, unsigned char *rotated, int n)
+__global__ void rotate_shared(unsigned char *orig, unsigned char *rotated, int n)
 {
     const int x = blockIdx.x * blockDim.x + threadIdx.x;
     const int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -154,7 +152,7 @@ void rotate_shared(unsigned char *orig, unsigned char *rotated, int n)
 
         const int dest_x = (gridDim.y - 1 - blockIdx.y) * BLKDIM + threadIdx.x;
         const int dest_y = blockIdx.x * BLKDIM + threadIdx.y;
-        rotated[n*dest_y + dest_x] = buf[local_y][local_x];
+        rotated[n * dest_y + dest_x] = buf[local_y][local_x];
     }
 }
 

@@ -8,10 +8,6 @@
 
 #include "hpc.h"
 
-#ifndef CHUNK_SIZE
-#define CHUNK_SIZE 1000
-#endif
-
 typedef struct {
     float *P;   /* coordinates P[i][j] of point i               */
     int N;      /* Number of points (rows of matrix P)          */
@@ -73,19 +69,16 @@ void free_points(points_t *points)
 /* Returns 1 if |p| dominates |q| */
 int dominates(const float *p, const float *q, int D)
 {
-    /* The following loops could be merged, but the keep them separated
-       for the sake of readability */
+    int greater = 0;
     for (int k = 0; k < D; k++) {
         if (p[k] < q[k]) {
             return 0;
         }
-    }
-    for (int k = 0; k < D; k++) {
-        if (p[k] > q[k]) {
-            return 1;
+        if (!greater && p[k] > q[k]) {
+            greater = 1;
         }
     }
-    return 0;
+    return greater;
 }
 
 /**
@@ -101,19 +94,17 @@ int skyline(const points_t *points, int *s)
     const float *P = points->P;
     int r = N;
 
-#pragma omp parallel for default(none) shared(N, s)
+#pragma omp parallel default(none) shared(P, N, D, s, r)
+{
+#pragma omp for
     for (int i = 0; i < N; i++) {
         s[i] = 1;
     }
 
-    for (int i = 0; i < N; i++)
-    {
+    for (int i = 0; i < N; i++) {
         if (s[i]) {
-#ifdef STATIC
-#pragma omp parallel for default(none) shared(P, N, D, i, s) reduction(+:r)
-#else
-#pragma omp parallel for schedule(dynamic, CHUNK_SIZE) default(none) shared(P, N, D, i, s) reduction(+:r)
-#endif
+#pragma omp barrier
+#pragma omp for reduction(+:r)
             for (int j = 0; j < N; j++) {
                 if (s[j] && dominates(&(P[i * D]), &(P[j * D]), D)) {
                     s[j] = 0;
@@ -122,6 +113,7 @@ int skyline(const points_t *points, int *s)
             }
         }
     }
+}
     return r;
 }
 

@@ -168,18 +168,18 @@ void do_sort_exchange(int phase,          /* number of this phase (0..comm_sz-1)
     const int partner = (phase % 2 == 0 ? even_partner : odd_partner);
 
     if (partner != MPI_PROC_NULL) {
-        MPI_Sendrecv(local_x,           /* sendbuf      */
-                     local_n,           /* sendcount    */
-                     MPI_DOUBLE,        /* datatype     */
-                     partner,           /* dest         */
-                     0,                 /* sendtag      */
-                     received_x,        /* recvbuf      */
-                     local_n,           /* recvcount    */
-                     MPI_DOUBLE,        /* datatype     */
-                     partner,           /* source       */
-                     0,                 /* recvtag      */
-                     MPI_COMM_WORLD,    /* comm         */
-                     MPI_STATUS_IGNORE  /* status       */
+        MPI_Sendrecv(local_x,          /* sendbuf      */
+                     local_n,          /* sendcount    */
+                     MPI_DOUBLE,       /* datatype     */
+                     partner,          /* dest         */
+                     0,                /* sendtag      */
+                     received_x,       /* recvbuf      */
+                     local_n,          /* recvcount    */
+                     MPI_DOUBLE,       /* datatype     */
+                     partner,          /* source       */
+                     0,                /* recvtag      */
+                     MPI_COMM_WORLD,   /* comm         */
+                     MPI_STATUS_IGNORE /* status       */
                      );
         if (my_rank < partner) {
             merge_low(local_x, received_x, buffer, local_n);
@@ -266,14 +266,14 @@ int main(int argc, char* argv[])
     }
 
     /* Gather results from all nodes */
-    MPI_Gather(local_x,        /* sendbuf */
-               local_n,        /* sendcount (how many elements each node sends */
-               MPI_DOUBLE,     /* sendtype */
-               x,              /* recvbuf */
-               local_n,        /* recvcount (how many elements should be received from _each_ node */
-               MPI_DOUBLE,     /* recvtype */
-               0,              /* root (where to send) */
-               MPI_COMM_WORLD  /* communicator */
+    MPI_Gather(local_x,       /* sendbuf */
+               local_n,       /* sendcount (how many elements each node sends */
+               MPI_DOUBLE,    /* sendtype */
+               x,             /* recvbuf */
+               local_n,       /* recvcount (how many elements should be received from _each_ node */
+               MPI_DOUBLE,    /* recvtype */
+               0,             /* root (where to send) */
+               MPI_COMM_WORLD /* communicator */
                );
 
     /* The root checks the sorted vector */

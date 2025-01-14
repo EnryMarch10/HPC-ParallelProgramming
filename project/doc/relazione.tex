@@ -1,4 +1,4 @@
-\documentclass[12pt, a4paper]{article}
+\documentclass[11pt, a4paper]{article}
 
 \usepackage[margin=1in]{geometry}
 \usepackage[utf8]{inputenc}
@@ -9,56 +9,53 @@
 
 \usepackage{float}
 
-\usepackage{url}
+\usepackage{url} % To put URLs
 \usepackage{xurl} % Avoids URLs to overfull \hbox
 
 \usepackage{graphicx}
-% \graphicspath{{img/}} % global configuration
+% \graphicspath{{img/}} % Images global configuration
 \usepackage[colorlinks=false, pdfborder={0 0 0}]{hyperref}
 
-\usepackage{tabularray}
+\usepackage{tabularray} % For tables
 
-% To use listings
 \usepackage[table, svgnames]{xcolor}
-\usepackage{listings}
+\usepackage{listings} % To use listings
+
+% Configurazione italiana del listato
+\renewcommand{\lstlistingname}{Listato}
 
 \title{
   Progetto di High Performance Computing 2024/2025
 }
 \author{
-  Enrico Marchionni, matr. 0001032322
+  Enrico Marchionni\\
+  \texttt{enrico.marchionni@studio.unibo.it}
 }
 \date{\today}
 
-% Package to keep track of the total number of pages
-\usepackage{lastpage}
-\usepackage{fancyhdr}
+\usepackage{subcaption} % For multiple graphs in a single picture
+\usepackage{tikz} % For graphs and overlaying text
+\usepackage{pgfplots} % To plot inside a graph
+\pgfplotsset{compat=1.18}
+
+\usepackage{lastpage} % To keep track of the total number of pages
+\usepackage{fancyhdr} % To define custom page numbering
 
 \fancypagestyle{fancy}{
   \fancyhf{}
-  \fancyfoot[C]{\thepage\ of \pageref{LastPage}}
+  \fancyfoot[C]{\thepage\ di \pageref{LastPage}}
   \renewcommand{\headrulewidth}{0pt}
-  \renewcommand{\footrulewidth}{0.4pt}
+  \renewcommand{\footrulewidth}{0pt}
 }
 
 \fancypagestyle{plain}{
   \fancyhf{}
-  \fancyfoot[C]{\thepage\ of \pageref{LastPage}}
+  \fancyfoot[C]{\thepage\ di \pageref{LastPage}}
   \renewcommand{\headrulewidth}{0pt}
-  \renewcommand{\footrulewidth}{0.4pt}
+  \renewcommand{\footrulewidth}{0pt}
 }
 
 \pagestyle{fancy}
-
-\usepackage{amsthm} % to make definitions
-\newtheorem{definition}{Definition}[section] % custom environment for definitions
-\newtheorem{example}{Example}
-
-% for graphs and overlaying text
-\usepackage{tikz}
-\usepackage{pgfplots}
-\pgfplotsset{compat=1.18}
-\usepackage{amsmath} % For math symbols
 
 \definecolor{C_comment_green}{rgb}{0.0, 0.5, 0.0}
 \definecolor{C_types_blue}{RGB}{30, 130, 210}
@@ -123,11 +120,12 @@
 
 \section{Introduzione}
 
-\dots
+Progetto di \href{https://www.unibo.it/en/teaching/course-unit-catalogue/course-unit/2024/385080}
+{High-Performance Computing - a.y. 2024-2025} sulla parallelizzazione di un algoritmo brute-force per il calcolo dello skyline.
 
 \section{Versione Seriale}
 
-L'algoritmo implementato è:
+L'algoritmo seriale da parallelizzare è:
 
 \begin{lstlisting}[language=CStyle, caption={Algoritmo per il calcolo dello skyline in C.}, label={lst:algoritmo_skyline_seriale}]
 int skyline(const points_t *points, int *s)
@@ -136,12 +134,10 @@ int skyline(const points_t *points, int *s)
   const int N = points->N;
   const float *P = points->P;
   int r = N;
-
   /* Inizializzazione */
   for (int i = 0; i < N; i++) {
     s[i] = 1;
   }
-
   /* Calcolo skyline */
   for (int i = 0; i < N; i++) {
     if (s[i]) {
@@ -157,11 +153,11 @@ int skyline(const points_t *points, int *s)
 }
 \end{lstlisting}
 
-È l'algoritmo seriale proposto è tipico per soluzioni brute-force del problema dello skyline.
-Il costo computazionale dell'algoritmo in \autoref{lst:algoritmo_skyline_seriale} è in generale \(O(N^2D)\).
+Quello descritto è l'algoritmo seriale proposto, tipico per soluzioni brute-force del problema dello skyline.
+Il costo computazionale dell'algoritmo nel \autoref{lst:algoritmo_skyline_seriale} è in generale \(O(N^2D)\).
 Infatti il ciclo esterno viene percorso \(N\) volte, nelle quali, nel caso peggiore, vengono eseguite altrettante \(N\) operazioni
 di confronto tra \(D\) elementi (da cui \(N \times N \times D\)).
-Si può notare che \(D\) può influire anche molto nella complessità, in particolare se \(D >> N^2\).
+Si può notare che \(D\) può influire anche molto nella complessità, in particolare se \(D >> N\) (oppure \(D >> N^2\)).
 Nel caso in cui \(N^2 >> D\), si considera \(O(N^2)\), nel caso in cui \(D >> N^2\), \(O(D)\), nell'ultimo caso in cui
 \(D \approx N^2\) allora \(O(N^2D)\).
 
@@ -182,11 +178,13 @@ Nel caso in cui \(N^2 >> D\), si considera \(O(N^2)\), nel caso in cui \(D >> N^
       Ottimo & \(\Theta(ND)\) & Il primo punto analizzato domina tutti gli altri. \\
       \hline
   \end{tblr}
-  \caption{\label{tab:algoritmo_skyline_complessita_casi} Input data.}
+  \caption{\label{tab:algoritmo_skyline_complessita_casi} Complessità computazionale.}
 \end{table}
 
 Come si può vedere dalla \autoref{tab:algoritmo_skyline_complessita_casi} la complessità in realtà varia anche di molto in base
-all'input fornito. Fattore importante nella misura della weak scaling efficiency per esempio.
+all'input fornito.
+La complessità computazionale è un fattore importante nei test fatti di seguito, per esempio nei test sulla Weak Scaling
+Efficiency (OpenMP).
 
 \section{Versione OpenMP}
 
@@ -198,72 +196,472 @@ Analizzando in codice in \autoref{lst:algoritmo_skyline_seriale} si può notare 
         Inoltre, dato il perfetto bilanciamento del carico, il pattern \textit{partition} può essere applicato con partizioni
         a grana grossa, per ridurre al minimo anche l'overhead per la gestione dei thread;
   \item Per quanto riguarda i due cicli che servono per il calcolo dello skyline invece, va considerato che c'è una dipendenza tra
-        i dati, in particolare il check di \texttt{s[i]} dipende dalla possibile assegnazione a \texttt{s[j]} nel caso in cui
-        \texttt{i = j} (oltre ai problemi di concorrenza).
-        Inoltre anche l'accesso ad \texttt{r} sarebbe una `race condition'.
+        i dati, in particolare il check di \texttt{s[i]} dipende dalla possibile assegnazione di \texttt{s[j]} nel caso in cui
+        \texttt{i = j}, questo può causare problemi di concorrenza.
+        Inoltre anche la scrittura su \texttt{r} può portare ad una `race condition' nella versione parallela.
         Quindi:
         \begin{itemize}
-          \item Per il primo problema ho scelto di parallelizzare solo il ciclo più interno. Il ciclo più esterno infatti viene
-                svolto \texttt{N} volte senza fare operazioni, quindi ha costo trascurabile, inoltre per poterlo parallelizzare
-                andrebbe modificato il codice, trovando per esempio un altro algoritmo;
+          \item Per il primo problema ho scelto di parallelizzare solo il ciclo più interno. Il ciclo più esterno infatti non
+                svolge il cuore della computazione, inoltre per poterlo parallelizzare andrebbe modificato il codice, cambiando
+                l'algoritmo;
           \item Per il secondo, invece, si potrebbe usare la direttiva \textit{atomic}, ma si può anche notare che per la
                 variabile \texttt{r} può essere applicato il pattern \textit{reduction} sull'operazione di somma.
         \end{itemize}
-        Per migliorare ulteriormente le prestazioni si deve considerare che il lavoro nel ciclo più interno per il calcolo dello
-        skyline non è bilanciato se si fa un partizionamento a grana grossa.
-        Data la diversità dei possibili input ed il possibile sbilanciamento del carico conviene fare partizionamento più fine
-        ed applicare anche il pattern \textit{master-worker}, che nonostante l'overhead più alto. Questo nella pratica favorisce
-        il bilanciamento del carico in casi in cui l'input è per sua natura molto sbilanciato nella distribuzione del carico di
-        lavoro.
+        Per migliorare ulteriormente le prestazioni si potrebbe considerare che il lavoro nel ciclo più interno per il calcolo
+        dello skyline non è necessariamente bilanciato se si fa un partizionamento a grana grossa.
+        Data la diversità dei possibili input ed il possibile sbilanciamento del carico potrebbe convenire fare un partizionamento
+        più fine o in caso estremo applicare anche il pattern \textit{master-worker}, che nonostante l'overhead più alto favorisce
+        un bilanciamento maggiore nei casi meno favorevoli.
+        In questo caso particolare non sono stati notati miglioramenti applicando il partizionamento a grana fine, nè il paradigma
+        \textit{master-worker}, entrambi testati con varie dimensioni dei blocchi, quindi questo non è stato applicato nella
+        versione proposta (si potrebbero fare input ad hoc, in particolare se \(D << N\) non fosse un'ipotesi, per verificare
+        questo sbilanciamento).
 \end{itemize}
+
+Aspetto importante da considerare è l'overhead eccessivo che si ha nelle consecutive creazioni e distruzioni del team di
+thread ogni volta che il ciclo interno al calcolo dello skyline viene eseguito in parallelo usando la clausola
+\texttt{\#pragma omp parallel for}.
+I compilatori più recenti ottimizzano da soli evitando creazioni e distruzioni multiple in cicli, questo però non è detto e
+dipende completamente dalla macchina utilizzata.
+L'implementazione proposta fa la cosa giusta in ogni caso.
+Proprio per questo ho scelto di usare la clausola \texttt{\#pragma omp parallel} in un unico blocco che contiene i cicli di
+inizializzazione e di calcolo dello skyline e poi con l'altra clausola \texttt{\#pragma omp for} di parallelizzare i cicli.
+L'utilizzo di \texttt{\#pragma omp for} invece di \texttt{\#pragma omp parallel for} garantisce una miglior gestione del team di
+thread, che nella pratica risulta in una concreta velocizzazione della versione non ottimizzata.
+Si noti che nel particolare algoritmo implementato \texttt{s[i]} è acceduto senza una race condition da ogni singolo thread
+il parallelo.
+Questo perché alla fine del \texttt{\#pragma omp for} c'è una barriera implicita, così come all'inizio ve ne è una esplicita,
+guarda la direttiva \texttt{\#pragma omp barrier}.
+In linea teorica si potrebbe pensare che in questo caso particolare la lettura di questa variabile anche se fatta senza la
+barriera esplicita, non dovrebbe comportare problemi.
+Tuttavia in questo caso potrebbe verificarsi che solo alcuni thread entrino nell'\texttt{if} e inizino ad eseguire il
+\texttt{\#pragma omp for} non aspettando gli altri che stanno ancora facendo il check su \texttt{s[i]}.
+Questo, anche se non sono state trovate delucidazioni a riguardo nella documentazione, potrebbe portare problemi dato che dopo il
+\texttt{\#pragma omp for} c'è una barriera di sincronizzazione implicita tra i thread.
+Quindi, in questo caso, sebbene nella pratica non sembri esserci un vero e proprio problema, la race condition è evitata per
+sicurezza usando una barriera di sincronizzazione \texttt{\#pragma omp barrier}.
 
 \subsection{Strong Scaling Efficiency}
 
-La dimensione del problema rimane fissa.
+All'aumentare del numero di core la dimensione totale del problema rimane fissa, di conseguenza quella locale, per ogni core,
+diminuisce.
+L'obiettivo è ridurre il tempo di esecuzione totale aggiungendo sempre più core.
 Il numero di core varia in \textit{p} da \({1, \dots, n}\), dove \(n\) è il numero massimo di core logici nella macchina.
 
-Per farlo ho considerato come input il file \texttt{worst-N100000-D10.in} (file generato dal programma fornito \texttt{inputgen}),
-in cui \(N = 100000\) e \(D = 10\).
+Per farlo ho considerato come input il file \texttt{worst-N50000-D10.in} (file generato dal programma fornito \texttt{inputgen}),
+in cui \(N = 50000\) e \(D = 10\).
+
+Di seguito i grafici con le statistiche ottenute dai test pratici sul server
+\texttt{isi-raptor03.\allowbreak csr.\allowbreak unibo.\allowbreak it}.
+La CPU del server, su cui sono stati effettuati i test, è un \texttt{Intel(R) Xeon(R) CPU E5-2603 v4 @ 1.70GHz} con 12 core
+fisici (quindi senza Hyper-Threading).
+Tutti i dati successivamente riportati rispettano le predizioni teoriche che si possono fare.
+Unica eccezione è per i dati ottenuti con tutti i dodici core che sono abbastanza incoerenti anche tra di loro, perciò non
+riportati nel grafico.
+Nonostante non riportati in questa relazione, tali dati sono stati analizzati e possono essere trovati nei fogli di calcolo
+allegati contenenti i risultati completi relativi ai test effettuati.
+Probabilmente, per poter considerare anche l'ultimo core, andrebbero fatti più test (centinaia) e presi solo i dati migliori.
+Questo sbalzo è dovuto al fatto che un core è sempre più attivo degli altri perché nel server ci sono vari processi
+in background che impiegano in parte la CPU e per come il SO schedula i processi nei core che ha a disposizione.
+
+\begin{figure}[H]
+  \centering
+    \begin{subfigure}{0.45\textwidth}
+      \begin{tikzpicture}[scale=0.9]
+      \begin{axis}[
+        title={Wall-Clock Time},
+        xlabel={Numero di core \(p\)},
+        ylabel={Tempo di esecuzione (s)},
+        xmin=1, xmax=11,
+        ymin=0, ymax=30,
+        xtick={1,2,3,4,5,6,7,8,9,10,11},
+        ytick={0,5,10,15,20,25,30},
+        legend pos=north east,
+        grid=both
+      ]
+        \addplot[
+          thick,
+          color=blue,
+          mark=*,
+        ]
+          coordinates {
+          (1, 29.21) (2, 14.76) (3, 9.90) (4, 7.47) (5, 6.01) (6, 5.04) (7, 4.34) (8, 3.82) (9, 3.42) (10, 3.10) (11, 2.89)
+        };
+        \addlegendentry{tempo}
+      \end{axis}
+      \end{tikzpicture}
+      \caption{\label{fig:openmp_strong_scaling_wall_clock_time} OpenMP: tempo di esecuzione.}
+    \end{subfigure}
+    \hspace{0.05\textwidth}
+    \begin{subfigure}{0.45\textwidth}
+      \begin{tikzpicture}[scale=0.9]
+        \begin{axis}[
+          title={Speedup},
+          xlabel={N. of cores \(p\)},
+          ylabel={Speedup \(S(p)\)},
+          xmin=1, xmax=11,
+          ymin=0, ymax=11,
+          xtick={1,2,3,4,5,6,7,8,9,10,11},
+          ytick={0,1,2,3,4,5,6,7,8,9,10,11},
+          legend pos=south east,
+          grid=both
+        ]
+          % Speedup
+          \addplot[
+            thick,
+            color=orange,
+            mark=*,
+          ]
+            coordinates {
+            (1, 1.00) (2, 1.98) (3, 2.95) (4, 3.91) (5, 4.86) (6, 5.80) (7, 6.72) (8, 7.65) (9, 8.54) (10, 9.42) (11, 10.10)
+          };
+          \addlegendentry{speedup}
+          % Ottimale
+          \addplot[
+            dashed,
+            color=gray,
+            mark=none,
+          ]
+            coordinates {
+            (1, 1) (2, 2) (3, 3) (4, 4) (5, 5) (6, 6) (7, 7) (8, 8) (9, 9) (10, 10) (11, 11)
+          };
+          \addlegendentry{\(p\)}
+        \end{axis}
+      \end{tikzpicture}
+      \caption{\label{fig:openmp_strong_scaling_speedup} OpenMP: accelerazione.}
+    \end{subfigure}
+\end{figure}
+
+Nel grafico in \autoref{fig:openmp_strong_scaling_wall_clock_time} viene mostrato il tempo di esecuzione impiegato nella
+computazione che cala sempre, in modo inversamente proporzionale, all'aumentare dei core.
+Inoltre nel grafico in \autoref{fig:openmp_strong_scaling_speedup} si nota uno speedup quasi lineare.
+
+\begin{figure}[H]
+  \centering
+    \begin{tikzpicture}[scale=0.8]
+      \begin{axis}[
+        x=1cm,
+        title={Strong Scaling Efficiency},
+        xlabel={Numero di core \(p\)},
+        ylabel={Efficienza \(E(p)\)},
+        xmin=1, xmax=11,
+        ymin=0, ymax=1.2,
+        xtick={1,2,3,4,5,6,7,8,9,10,11},
+        ytick={0,0.2,0.4,0.6,0.8,0.9,1.0,1.2},
+        legend pos=south east,
+        grid=both
+      ]
+        \addplot[
+          thick,
+          color=purple,
+          mark=*,
+        ]
+          coordinates {
+          (1, 1) (2, 0.99) (3, 0.98) (4, 0.98) (5, 0.97) (6, 0.97) (7, 0.96) (8, 0.96) (9, 0.95) (10, 0.94) (11, 0.92)
+        };
+        \addlegendentry{efficienza}
+      \end{axis}
+    \end{tikzpicture}
+    \caption{\label{fig:openmp_strong_scaling_efficiency} OpenMP: efficienza.}
+\end{figure}
+
+Nel grafico in \autoref{fig:openmp_strong_scaling_efficiency} si può notare che l'efficienza, seppur lentamente diminuendo, rimane
+vicina ad 1.
 
 \subsection{Weak Scaling Efficiency}
 
-Cambia la dimensione `globale' del problema ma quella locale, per ogni core, rimane il più costante possibile.
+All'aumentare del numero di core cambia la dimensione totale del problema ma quella locale, per ogni core, rimane il più costante
+possibile.
+L'obiettivo è risolvere problemi più grandi nello stesso tempo.
 Il numero di core varia in \textit{p} da \({1, \dots, n}\), dove \(n\) è il numero massimo di core logici nella macchina.
 
 Per farlo ho considerato come input diversi file generati da \texttt{inputgen}, fissando \(D = 10\) e variando \(N\) in modo
 opportuno, come considerato nel seguito.
+Quindi i file di input considerati sono del tipo \texttt{worst-NX-D10.in}, dove X è proporzionale al lavoro che viene fatto con
+\(N = 50000\) con tutti e 12 i core del server.
 
 In questo particolare caso pessimo, il costo computazionale è pari a \(\Theta(N^2D)\).
 Da qui posso ricavare che il lavoro per core è:
 
-\begin{equation} \label{eq:quantita_di_lavoro}
+\begin{equation} \label{eq:openmp_quantita_di_lavoro}
   \frac{N^2 \cdot D}{p} = CONST
 \end{equation}
 
-In particolare in \autoref{eq:quantita_di_lavoro} il lavoro viene posto costante per ipotesi della weak scaling efficiency.
+In particolare in \autoref{eq:openmp_quantita_di_lavoro} il lavoro viene posto costante per ipotesi della weak scaling efficiency.
 Dobbiamo ricavare il valore di \(N\) in funzione del numero di processi.
 
-\begin{equation} \label{eq:quantita_di_lavoro_N}
+\begin{equation} \label{eq:openmp_quantita_di_lavoro_N}
   N = \sqrt{p} \cdot \frac{CONST}{\sqrt{D}} = \sqrt{p} \cdot CONST'
 \end{equation}
 
-Quindi, da \autoref{eq:quantita_di_lavoro_N}, supponendo \(D\) costante, \(N\) può essere in pratica calcolato come:
+Quindi, dall'\autoref{eq:openmp_quantita_di_lavoro_N}, supponendo \(D\) costante, \(N\) può essere in pratica calcolato come:
 
-\begin{equation} \label{eq:quantita_di_lavoro_N_pratico}
+\begin{equation} \label{eq:openmp_quantita_di_lavoro_N_pratico}
   N = \sqrt{p} \cdot N_0
 \end{equation}
 
 Dove \(N_0\) è il valore iniziale di \(N\), infatti per un singolo core si ha \(N = N_0\).
 In particolare per scegliere \(N_0\) opportuno ho calcolato \(N_0 = \frac{N}{\sqrt{p}}\), formula inversa da
-\autoref{eq:quantita_di_lavoro_N_pratico}.
+\autoref{eq:openmp_quantita_di_lavoro_N_pratico}.
 A questo punto \(N_0\) si calcola con \(N\) e \(p\) scelti uguali a quelli usati nell'ultimo test della strong scaling efficiency.
 
-\section{Versione MPI/CUDA}
+In base alle considerazioni fatte è stato scelto di calcolare \(N_0\) come \(N_0 = \lceil \frac{50000}{\sqrt{12}} \rceil =
+14434\).
+\(N_0\) potrebbe anche essere scelto a priori, però questa precisione ha permesso di favorire tempi ragionevoli di esecuzione,
+almeno qualche secondo, in modo da garantire una buona coerenza tra i risultati ed allo stesso tempo si è evitato di occupare
+la macchina per decine o centinaia di secondi.
+Da qui \(N\) nelle iterazioni successive (che sono 12) vale \(N = \lceil \sqrt{p} \cdot N_0 \rceil\).
 
-\dots
+\begin{table}[H]
+  \begin{tblr}{
+      colspec={*{3}{X[l]}},
+      width=\textwidth,
+      row{odd}={gray!15},
+      row{even}={white},
+      row{1}={bg=gray!90,fg=white},
+      colsep=4pt
+    }
+      \textbf{p} & \textbf{N} & \textbf{D} \\
+      \textbf{1} & 14434 & 10 \\
+      \hline
+      \textbf{2} & 20413 & 10 \\
+      \hline
+      \textbf{3} & 25000 & 10 \\
+      \hline
+      \textbf{4} & 28868 & 10 \\
+      \hline
+      \textbf{5} & 32275 & 10 \\
+      \hline
+      \textbf{6} & 35356 & 10 \\
+      \hline
+      \textbf{7} & 38189 & 10 \\
+      \hline
+      \textbf{8} & 40826 & 10 \\
+      \hline
+      \textbf{9} & 43302 & 10 \\
+      \hline
+      \textbf{10} & 45644 & 10 \\
+      \hline
+      \textbf{11} & 47872 & 10 \\
+      \hline
+      \textbf{12} & 50001 & 10 \\
+      \hline
+  \end{tblr}
+  \caption{\label{tab:openmp_weak_scaling_inputs} Dimensione dell'input all'aumentare del numero di core.}
+\end{table}
+
+Di seguito i grafici con le statistiche ottenute dai test pratici sul server
+\texttt{isi-raptor03.\allowbreak csr.\allowbreak unibo.\allowbreak it}.
+Come input sono state usate le dimensioni riportate in \autoref{tab:openmp_weak_scaling_inputs}.
+Anche in questo caso sono stati omessi i risultati ottenuti con tutti i 12 core per lo stesso motivo già spiegato appena prima
+di riportare i dati della weak scaling efficiency.
+
+\begin{figure}[H]
+  \centering
+    \begin{tikzpicture}[scale=0.8]
+      \begin{axis}[
+        x=1cm,
+        title={Weak Scaling Efficiency},
+        xlabel={Numero di core \(p\)},
+        ylabel={Efficienza \(E(p)\)},
+        xmin=1, xmax=11,
+        ymin=0, ymax=1.2,
+        xtick={1,2,3,4,5,6,7,8,9,10,11},
+        ytick={0,0.2,0.4,0.6,0.8,0.9,1.0,1.2},
+        legend pos=south east,
+        grid=both
+      ]
+        \addplot[
+          thick,
+          color=purple,
+          mark=*,
+        ]
+          coordinates {
+          (1, 1) (2, 0.98) (3, 0.97)
+          (4, 0.97) (5, 0.97) (6, 0.97)
+          (7, 0.96) (8, 0.96) (9, 0.96)
+          (10, 0.95) (11, 0.92)
+        };
+        \addlegendentry{efficienza}
+      \end{axis}
+    \end{tikzpicture}
+    \caption{\label{fig:openmp_weak_scaling_efficiency} OpenMP: efficienza.}
+\end{figure}
+
+Nel grafico in \autoref{fig:openmp_weak_scaling_efficiency} si può notare che, anche in questo caso, l'efficienza, seppur
+lentamente diminuendo, rimane vicina ad 1. Questo conferma quanto ottenuto anche nella strong scaling efficiency.
+
+\section{Versione CUDA}
+
+Valgono le considerazioni già fatte per OpenMP.
+L'algoritmo di partenza è stato testato con varie soluzioni.
+Quella scelta permette di mantenere la struttura dell'algoritmo di partenza descritto in \autoref{lst:algoritmo_skyline_seriale}.
+La versione implementata sfrutta il massimo numero di thread per blocco e non fa utilizzo della shared memory.
+
+Il codice consiste nell'esecuzione di 2 kernel:
+
+\begin{itemize}
+  \item Il primo svolge l'inizializzazione dell'array dei punti che sono nello skyline in concomitanza con la prima iterazione
+        del ciclo che fa il vero e proprio calcolo dello skyline.
+        In questo caso un kernel specifico è necessario perché altrimenti dovrebbe essere fatta una sincronizzazione tra tutti i
+        thread della griglia (tra più blocchi) per l'accesso a \texttt{s[i]}.
+  \item Nel secondo kernel ogni thread esegue un'iterazione del ciclo più interno del calcolo dello skyline.
+        Tutti i thread eseguono il ciclo più esterno completamente.
+        Nel codice è presente una possibile race condition sul check di \texttt{s[i]} che però è accettabile perché al massimo può
+        comportare qualche iterazione in più che non sarebbe necessaria, ma che non ha effetti indesiderati.
+        Si noti che \texttt{s[g\_index]} non è stato settato a \texttt{false} in modo atomico perché questo non è necessario.
+        Per la riduzione di \texttt{r}, invece, è stato scelto di eseguire il decremento atomicamente, invece di eseguire la vera
+        e propria riduzione.
+        Questo perché intuitivamente l'operazione viene fatta raramente da più thread nello stesso momento, inoltre nella pratica
+        è stato verificato che il decremento atomico risulta più conveniente della riduzione vera e propria per i vari test
+        sperimentati.
+\end{itemize}
+
+\subsection{Statistiche}
+
+Dato che in questo caso il concetto di speedup non può essere considerato, vengono invece considerati tempo d'esecuzione,
+throughput e speedup di CUDA rispetto ad OpenMP.
+
+Anche in questo caso i dati riportati su OpenMP si riferiscono alla CPU che usa undici dei dodici core a sua disposizione,
+che nella pratica risulta in valori attendibili e addirittura migliori dei test con i dodici core.
+Anche questi dati possono essere trovati nei fogli di calcolo presenti nella documentazione.
+
+\begin{figure}[H]
+  \centering
+    \begin{subfigure}{0.45\textwidth}
+      \begin{tikzpicture}[scale=0.9]
+        \begin{axis}[
+          title={Wall-Clock Time},
+          xlabel={Dimensione del problema N (per iterazione)},
+          ylabel={Tempo di esecuzione (s)},
+          xtick=data,
+          symbolic x coords={28868, 40826, 50001, 57736, 64551, 70712, 76378, 81651, 86004, 91289, 95744, 100002},
+          x tick label style={rotate=45, anchor=east},
+          ymin=0, ymax=12,
+          ytick={0,1,2,3,4,5,6,7,8,9,10,11,12},
+          legend pos=north west,
+          grid=both
+        ]
+          % OpenMP
+          \addplot[
+            thick,
+            color=blue,
+            mark=*,
+          ]
+            coordinates {
+            (28868, 0.99) (40826, 2.00) (50001, 2.90)
+            (57736, 3.85) (64551, 4.76) (70712, 5.69)
+            (76378, 6.65) (81651, 7.55) (86004, 8.50)
+            (91289, 9.42) (95744, 10.32) (100002, 11.26)
+          };
+          \addlegendentry{OpenMP}
+          % CUDA
+          \addplot[
+            thick,
+            color=green,
+            mark=*,
+          ]
+            coordinates {
+            (28868, 0.32) (40826, 0.38) (50001, 0.43)
+            (57736, 0.46) (64551, 0.56) (70712, 0.60)
+            (76378, 0.62) (81651, 0.67) (86004, 0.71)
+            (91289, 0.74) (95744, 0.84) (100002, 0.88)
+          };
+          \addlegendentry{CUDA}
+        \end{axis}
+      \end{tikzpicture}
+      \caption{\label{fig:cuda_wall_clock_time} OpenMP e CUDA: tempi di esecuzione.}
+    \end{subfigure}
+    \hspace{0.05\textwidth}
+    \begin{subfigure}{0.45\textwidth}
+      \begin{tikzpicture}[scale=0.9]
+        \begin{axis}[
+          title={Throughput},
+          xlabel={Dimensione del problema N (per iterazione)},
+          ylabel={Operazioni (Gops/s)},
+          xtick=data,
+          symbolic x coords={28868, 40826, 50001, 57736, 64551, 70712, 76378, 81651, 86004, 91289, 95744, 100002},
+          x tick label style={rotate=45, anchor=east},
+          ymin=0, ymax=140,
+          scaled y ticks=false,
+          ytick={0,10,20,30,40,50,60,70,80,90,100,110,120,130,140},
+          legend pos=north west,
+          grid=both
+        ]
+          % OpenMP
+          \addplot[
+            thick,
+            color=orange,
+            mark=*,
+          ]
+            coordinates {
+            (28868, 8.443) (40826, 8.330) (50001, 8.624)
+            (57736, 8.663) (64551, 8.763) (70712, 8.794)
+            (76378, 8.771) (81651, 8.829) (86004, 8.828)
+            (91289, 8.849) (95744, 8.887) (100002, 8.879)
+          };
+          \addlegendentry{OpenMP}
+          % CUDA
+          \addplot[
+            thick,
+            color=pink,
+            mark=*,
+          ]
+            coordinates {
+            (28868, 26.289) (40826, 44.211) (50001, 57.873)
+            (57736, 72.942) (64551, 74.808) (70712, 83.476)
+            (76378, 93.939) (81651, 99.062) (86004, 105.4046)
+            (91289, 113.229) (95744, 108.742) (100002, 114.160)
+          };
+          \addlegendentry{CUDA}
+        \end{axis}
+      \end{tikzpicture}
+      \caption{\label{fig:cuda_throughput} OpenMP e CUDA: throughput.}
+    \end{subfigure}
+\end{figure}
+
+Per quanto riguarda i tempi di esecuzione confrontati in \autoref{fig:cuda_wall_clock_time}, si può notare come i valori di
+OpenMP incrementino molto più velocemente che quelli di CUDA, all'aumentare della dimensione del problema.
+In \autoref{fig:cuda_throughput}, invece, si può notare come CUDA abbia un throughput che aumenta quasi linearmente, mentre per
+OpenMP questo rimane pressoché costante.
+
+\begin{figure}[H]
+  \centering
+    \begin{tikzpicture}[scale=0.8]
+        \begin{axis}[
+          x=1cm,
+          width=12cm, height=8cm,
+          title={Speedup (CUDA to OpenMP)},
+          xlabel={Dimensione del problema N (per iterazione)},
+          ylabel={Speedup \(S(N)\)},
+          xtick=data,
+          symbolic x coords={28868, 40826, 50001, 57736, 64551, 70712, 76378, 81651, 86004, 91289, 95744, 100002},
+          x tick label style={rotate=45, anchor=east},
+          ymin=0, ymax=16,
+          legend pos=north west,
+          bar width=0.7cm,
+          nodes near coords,
+          grid=none
+        ]
+          \addplot[ybar, fill=cyan] coordinates {
+            (28868, 3.11) (40826, 5.31) (50001, 6.71) (57736, 8.42)
+            (64551, 8.54) (70712, 9.49) (76378, 10.71) (81651, 11.22)
+            (86004, 11.90) (91289, 12.80) (95744, 12.24) (100002, 12.86)
+          };
+          \addlegendentry{speedup}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{\label{fig:cuda_speedup} OpenMP e CUDA: speedup.}
+\end{figure}
+
+In \autoref{fig:cuda_speedup}, si può notare che lo speedup di CUDA rispetto ad OpenMP incrementa linearmente fino quasi a
+stabilizzarsi dopo una certa soglia (\(N = 91289\)).
 
 \section{Conclusioni}
 
-\dots
+Per concludere, la parallelizzazione dell'algoritmo proposto in \autoref{lst:algoritmo_skyline_seriale} è stata fatta in OpenMP e
+CUDA.
+Per entrambe sono state analizzate le relative versioni parallele.
+Alla fine, per comparare le due versioni, è stato riportato lo speedup di CUDA rispetto ad OpenMP.
 
 \end{document}

@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
         local_x[i] = i + my_rank * local_N;
     }
 
-    scan_x = (int *)malloc(local_N * sizeof(*scan_x));
+    scan_x = (int *) malloc(local_N * sizeof(*scan_x));
 
     MPI_Scan(local_x,		/* sendbuf      */
              scan_x,		/* recvbuf      */

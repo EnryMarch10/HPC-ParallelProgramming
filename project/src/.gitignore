@@ -3,3 +3,5 @@
 input/
 output/
 results/
+expected/
+logs/

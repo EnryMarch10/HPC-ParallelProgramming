@@ -146,7 +146,7 @@ void merge_low(double *local_x, int local_n, double *received_x, int received_n,
     int idx_local = 0, idx_received = 0, idx_buf = 0;
 
     while (idx_buf < received_n) {
-        if ((idx_received >= received_n) || ((idx_local < local_n) && compare(local_x + idx_local, received_x + idx_received) < 0)) {
+        if (idx_received >= received_n || (idx_local < local_n && compare(local_x + idx_local, received_x + idx_received) < 0)) {
             buffer[idx_buf] = local_x[idx_local];
             idx_local++;
         } else {
@@ -170,7 +170,7 @@ void merge_high(double* local_x, int local_n, double *received_x, int received_n
 {
     int idx_local = local_n - 1, idx_received = received_n - 1, idx_buf = received_n - 1;
     while (idx_buf >= 0) {
-        if ((idx_received < 0) || ((idx_local >= 0) && compare(local_x + idx_local, received_x + idx_received) > 0)) {
+        if (idx_received < 0 || (idx_local >= 0 && compare(local_x + idx_local, received_x + idx_received) > 0)) {
             buffer[idx_buf] = local_x[idx_local];
             idx_local--;
         } else {
@@ -317,7 +317,10 @@ int main(int argc, char* argv[])
         local_n = do_sort_exchange(phase, local_x, local_n, received_x, buffer, my_rank, even_partner, odd_partner);
     }
 
-    /* Gather local_n so that the master knows the new values of sendcounts[] */
+    /* At the end of the sort-exchange phases, the length local_n of
+       the buffers might have changed. Therefore, we need to gather
+       all the new values of local_n into sendcounts[] so that the
+       subsequent MPI_Gatherv() uses the correct data. */
     MPI_Gather(&local_n,       /* sendbuf      */
                1,              /* sendcount    */
                MPI_INT,        /* datatype     */

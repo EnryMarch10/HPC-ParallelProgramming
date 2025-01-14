@@ -97,26 +97,26 @@ int main(int argc, char* argv[])
     local_z = (double *) malloc(local_n * sizeof(*local_z));
 
     /* Scatter `x[]` */
-    MPI_Scatterv(x,		        /* sendbuf */
+    MPI_Scatterv(x,             /* sendbuf */
                  counts,        /* sendcounts */
                  displs,        /* displacements */
-                 MPI_DOUBLE,	/* sent MPI_Datatype */
-                 local_x,	    /* recvbuf */
-                 local_n,	    /* recvcount */
-                 MPI_DOUBLE,	/* received MPI_Datatype */
-                 0,		        /* root */
+                 MPI_DOUBLE,    /* sent MPI_Datatype */
+                 local_x,       /* recvbuf */
+                 local_n,       /* recvcount */
+                 MPI_DOUBLE,    /* received MPI_Datatype */
+                 0,             /* root */
                  MPI_COMM_WORLD /* communicator */
                  );
 
     /* Scatter `y[]` */
-    MPI_Scatterv(y,		        /* sendbuf */
+    MPI_Scatterv(y,             /* sendbuf */
                  counts,        /* sendcounts */
                  displs,        /* displacements */
-                 MPI_DOUBLE,	/* sent MPI_Datatype */
-                 local_y,	    /* recvbuf */
-                 local_n,	    /* recvcount */
-                 MPI_DOUBLE,	/* received MPI_Datatype */
-                 0,		        /* root */
+                 MPI_DOUBLE,    /* sent MPI_Datatype */
+                 local_y,       /* recvbuf */
+                 local_n,       /* recvcount */
+                 MPI_DOUBLE,    /* received MPI_Datatype */
+                 0,             /* root */
                  MPI_COMM_WORLD /* communicator */
                  );
 
@@ -124,14 +124,14 @@ int main(int argc, char* argv[])
     sum(local_x, local_y, local_z, local_n);
 
     /* Gather results from all nodes */
-    MPI_Gatherv(local_z,	   /* sendbuf */
-                local_n,	   /* sendcount */
-                MPI_DOUBLE,	   /* sendtype */
-                z,		       /* recvbuf */
+    MPI_Gatherv(local_z,       /* sendbuf */
+                local_n,       /* sendcount */
+                MPI_DOUBLE,    /* sendtype */
+                z,             /* recvbuf */
                 counts,        /* receive counts */
                 displs,        /* displacements */
-                MPI_DOUBLE,	   /* recvtype */
-                0,		       /* root (where to send) */
+                MPI_DOUBLE,    /* recvtype */
+                0,             /* root (where to send) */
                 MPI_COMM_WORLD /* communicator */
                 );
 
@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
     /* The master checks the result */
     if (my_rank == 0) {
         for (i = 0; i < n; i++) {
-            if (fabs(z[i] - (n-1)) > 1e-6) {
+            if (fabs(z[i] - (n - 1)) > 1e-6) {
                 fprintf(stderr, "Test FAILED: z[%d]=%f, expected %f\n", i, z[i], (double) (n - 1));
                 MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
             }

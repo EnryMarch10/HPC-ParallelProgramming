@@ -1,24 +1,3 @@
-/****************************************************************************
- *
- * skyline.c - Serial implementaiton of the skyline operator
- *
- * Copyright (C) 2024 Moreno Marzolla
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- ****************************************************************************/
-
 #if _XOPEN_SOURCE < 600
 #define _XOPEN_SOURCE 600
 #endif
@@ -28,6 +7,8 @@
 #include <assert.h>
 
 #include "hpc.h"
+
+#define BLKDIM 1024
 
 typedef struct {
     float *P;   /* coordinates P[i][j] of point i               */
@@ -88,21 +69,59 @@ void free_points(points_t *points)
 }
 
 /* Returns 1 if |p| dominates |q| */
-int dominates(const float *p, const float *q, int D)
+__device__ int dominates(const float *const p, const float *const q, const int D)
 {
-    /* The following loops could be merged, but the keep them separated
-       for the sake of readability */
+    int greater = 0;
     for (int k = 0; k < D; k++) {
         if (p[k] < q[k]) {
             return 0;
         }
-    }
-    for (int k = 0; k < D; k++) {
-        if (p[k] > q[k]) {
-            return 1;
+        if (!greater && p[k] > q[k]) {
+            greater = 1;
         }
     }
-    return 0;
+    return greater;
+}
+
+__global__ void kernel_skyline(const float *const P, int *const s, const int N, const int D, int *const r)
+{
+    __shared__ int local_r[BLKDIM];
+    const int l_index = threadIdx.x;
+    const int g_index = threadIdx.x + blockIdx.x * blockDim.x;
+    int b_size = blockDim.x / 2;
+
+    local_r[l_index] = 0;
+
+    if (g_index < N) {
+        s[g_index] = 1;
+        if (dominates(P, &(P[g_index * D]), D)) {
+            s[g_index] = 0;
+        }
+        for (int i = 1; i < N; i++) {
+            if (!s[g_index]) {
+                break;
+            }
+            if (dominates(&(P[i * D]), &(P[g_index * D]), D)) {
+                s[g_index] = 0;
+            }
+        }
+        if (!s[g_index]) {
+            local_r[l_index]--;
+        }
+    }
+
+    __syncthreads();
+    while (b_size > 0) {
+        if (l_index < b_size) {
+            local_r[l_index] += local_r[l_index + b_size];
+        }
+        b_size = b_size / 2;
+        __syncthreads();
+    }
+
+    if (l_index == 0) {
+        atomicAdd(r, local_r[0]);
+    }
 }
 
 /**
@@ -118,20 +137,33 @@ int skyline(const points_t *points, int *s)
     const float *P = points->P;
     int r = N;
 
-    for (int i = 0; i < N; i++) {
-        s[i] = 1;
-    }
+    const int N_BLOCKS = (N + BLKDIM - 1) / BLKDIM;
 
-    for (int i = 0; i < N; i++) {
-        if (s[i]) {
-            for (int j = 0; j < N; j++) {
-                if (s[j] && dominates(&(P[i * D]), &(P[j * D]), D)) {
-                    s[j] = 0;
-                    r--;
-                }
-            }
-        }
-    }
+    float *d_P;
+    int *d_s;
+    int *d_r;
+
+    const size_t SIZE_P = N * D * sizeof(*P);
+    const size_t SIZE_s = N * sizeof(*s);
+    const size_t SIZE_r = sizeof(r);
+
+    cudaSafeCall(cudaMalloc((void **) &d_P, SIZE_P));
+    cudaSafeCall(cudaMalloc((void **) &d_s, SIZE_s));
+    cudaSafeCall(cudaMalloc((void **) &d_r, SIZE_r));
+
+    cudaSafeCall(cudaMemcpy(d_P, P, SIZE_P, cudaMemcpyHostToDevice));
+    cudaSafeCall(cudaMemcpy(d_r, &r, SIZE_r, cudaMemcpyHostToDevice));
+
+    kernel_skyline<<<N_BLOCKS, BLKDIM>>>(d_P, d_s, N, D, d_r);
+    cudaCheckError();
+
+    cudaSafeCall(cudaMemcpy(s, d_s, SIZE_s, cudaMemcpyDeviceToHost));
+    cudaSafeCall(cudaMemcpy(&r, d_r, SIZE_r, cudaMemcpyDeviceToHost));
+
+    cudaSafeCall(cudaFree(d_P));
+    cudaSafeCall(cudaFree(d_s));
+    cudaSafeCall(cudaFree(d_r));
+
     return r;
 }
 

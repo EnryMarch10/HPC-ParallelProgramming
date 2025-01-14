@@ -83,24 +83,24 @@ int main(int argc, char* argv[])
     local_z = (double*) malloc(local_n * sizeof(*local_z));
 
     /* Scatter vector x */
-    MPI_Scatter(x,		       /* sendbuf */
-                local_n,	   /* sendcount; how many elements to send to _each_ destination */
-                MPI_DOUBLE,	   /* sent MPI_Datatype */
-                local_x,	   /* recvbuf */
-                local_n,	   /* recvcount (usually equal to sendcount) */
-                MPI_DOUBLE,	   /* received MPI_Datatype */
-                0,		       /* root */
+    MPI_Scatter(x,             /* sendbuf */
+                local_n,       /* sendcount; how many elements to send to _each_ destination */
+                MPI_DOUBLE,    /* sent MPI_Datatype */
+                local_x,       /* recvbuf */
+                local_n,       /* recvcount (usually equal to sendcount) */
+                MPI_DOUBLE,    /* received MPI_Datatype */
+                0,             /* root */
                 MPI_COMM_WORLD /* communicator */
                 );
 
     /* Scatter vector y */
-    MPI_Scatter(y,		       /* sendbuf */
-                local_n,	   /* sendcount; how many elements to send to _each_ destination */
-                MPI_DOUBLE,	   /* sent MPI_Datatype */
-                local_y,	   /* recvbuf */
-                local_n,	   /* recvcount (usually equal to sendcount) */
-                MPI_DOUBLE,	   /* received MPI_Datatype */
-                0,		       /* root */
+    MPI_Scatter(y,             /* sendbuf */
+                local_n,       /* sendcount; how many elements to send to _each_ destination */
+                MPI_DOUBLE,    /* sent MPI_Datatype */
+                local_y,       /* recvbuf */
+                local_n,       /* recvcount (usually equal to sendcount) */
+                MPI_DOUBLE,    /* received MPI_Datatype */
+                0,             /* root */
                 MPI_COMM_WORLD /* communicator */
                 );
 
@@ -108,18 +108,18 @@ int main(int argc, char* argv[])
     sum(local_x, local_y, local_z, local_n);
 
     /* Gather results from all nodes */
-    MPI_Gather(local_z,	        /* sendbuf */
-               local_n,	        /* sendcount (how many elements each node sends */
-               MPI_DOUBLE,	    /* sendtype */
-               z,		        /* recvbuf */
-               local_n,	        /* recvcount (how many elements should be received from _each_ node */
-               MPI_DOUBLE,	    /* recvtype */
-               0,		        /* root (where to send) */
-               MPI_COMM_WORLD	/* communicator */
+    MPI_Gather(local_z,       /* sendbuf */
+               local_n,       /* sendcount (how many elements each node sends */
+               MPI_DOUBLE,    /* sendtype */
+               z,             /* recvbuf */
+               local_n,       /* recvcount (how many elements should be received from _each_ node */
+               MPI_DOUBLE,    /* recvtype */
+               0,             /* root (where to send) */
+               MPI_COMM_WORLD /* communicator */
                );
 
     /* The master takes care of the leftovers, if any */
-    if ((my_rank == 0) && (n % comm_sz)) {
+    if (my_rank == 0 && n % comm_sz) {
         const int skip = (n / comm_sz) * comm_sz;
         sum(x + skip, y + skip, z + skip, n % comm_sz);
     }
@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
     /* The master checks the result */
     if (my_rank == 0) {
         for (i = 0; i < n; i++) {
-            if (fabs(z[i] - (n-1)) > 1e-6) {
+            if (fabs(z[i] - (n - 1)) > 1e-6) {
                 fprintf(stderr, "Test FAILED: z[%d]=%f, expected %f\n", i, z[i], (double) (n - 1));
                 MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
             }

@@ -18,6 +18,7 @@
  *      ./cuda-vecadd3
  *
  ****************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -42,7 +43,7 @@ void vec_init(int *a, int n)
 int main(void)
 {
     int *a, *b, *c;	          /* host copies of a, b, c */
-    int *d_a, *d_b, *d_c;	  /* device copies of a, b, c */
+    int *d_a, *d_b, *d_c;     /* device copies of a, b, c */
     int i;
     const size_t size = N * sizeof(int);
 

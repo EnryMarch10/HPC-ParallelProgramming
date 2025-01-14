@@ -1,6 +1,14 @@
-## Written by Enrico Marchionni
-
 SHELL := /bin/bash
+
+## BUILD dir
+
+DIR_BUILD := build
+DIR_BIN := $(DIR_BUILD)/bin
+DIR_OBJ := $(DIR_BUILD)/obj
+
+DIRS := $(DIR_BIN) $(DIR_OBJ) $(DIR_BUILD)
+
+## PROGRAMS
 
 INPUT := input
 SERIAL := serial
@@ -9,12 +17,6 @@ MPI := mpi
 CUDA := cuda
 
 TARGETS := $(INPUT) $(SERIAL) $(OPENMP) $(MPI) $(CUDA)
-
-DIR_BUILD := build
-DIR_BIN := $(DIR_BUILD)/bin
-DIR_OBJ := $(DIR_BUILD)/obj
-
-DIRS := $(DIR_BIN) $(DIR_OBJ) $(DIR_BUILD)
 
 EXE_INPUT := inputgen
 TARGET_INPUT := $(addprefix $(DIR_BIN)/, $(EXE_INPUT))
@@ -63,12 +65,14 @@ help:
 	@echo "Available targets:"
 	@echo
 	@echo "    help    prints this message"
+	@echo "   files    generate input files"
 	@echo "  serial    compile serial program"
 	@echo "     omp    compile parallel OpenMP program"
 	@echo "     mpi    compile MPI program"
 	@echo "    cuda    compile CUDA program"
 	@echo "     all    compile everything (default)"
 	@echo "   clean    cleanup temporary files"
+	@echo "   purge    brutally removes build/* with all contents"
 	@echo
 
 .PRECIOUS: $(DIR_OBJ)/%.o
@@ -103,4 +107,70 @@ clean:
 	-\rm -f $(addprefix $(DIR_OBJ)/, $(addsuffix .o, $(EXE))) $(addprefix $(DIR_BIN)/, $(EXE))
 	-\rm -df $(DIRS)
 
-.PHONY: all help clean $(TARGETS) $(EXE)
+purge:
+	-\rm -rf $(DIR_BUILD)
+
+## INPUT
+
+N_POINTS := 100000
+DATA_DIR := input
+
+files: \
+	$(DATA_DIR)/circle-N1000-D2.in \
+	$(DATA_DIR)/test1-N$(N_POINTS)-D3.in \
+	$(DATA_DIR)/test2-N$(N_POINTS)-D4.in \
+	$(DATA_DIR)/test3-N$(N_POINTS)-D10.in \
+	$(DATA_DIR)/test4-N$(N_POINTS)-D8.in \
+	$(DATA_DIR)/test5-N$(N_POINTS)-D20.in \
+	$(DATA_DIR)/test6-N$(N_POINTS)-D50.in \
+	$(DATA_DIR)/test7-N$(N_POINTS)-D200.in \
+	$(DATA_DIR)/worst-N$(N_POINTS)-D10.in
+
+# a small 2d circle
+$(DATA_DIR)/circle-N1000-D2.in:
+	@mkdir -p $(DATA_DIR)
+	rbox 1000 s D2 W1 > $@
+
+# surface of a 3d square
+$(DATA_DIR)/test1-N$(N_POINTS)-D3.in:
+	@mkdir -p $(DATA_DIR)
+	rbox $(N_POINTS) W0 > $@
+
+# surface of a 4d sphere
+$(DATA_DIR)/test2-N$(N_POINTS)-D4.in:
+	@mkdir -p $(DATA_DIR)
+	rbox $(N_POINTS) s D4 > $@
+
+# 10d diamond
+$(DATA_DIR)/test3-N$(N_POINTS)-D10.in:
+	@mkdir -p $(DATA_DIR)
+	rbox $(N_POINTS) d D10 > $@
+
+# 8d symplex
+$(DATA_DIR)/test4-N$(N_POINTS)-D8.in:
+	@mkdir -p $(DATA_DIR)
+	rbox $(N_POINTS) y D8 > $@
+
+# 20d sphere
+$(DATA_DIR)/test5-N$(N_POINTS)-D20.in:
+	@mkdir -p $(DATA_DIR)
+	rbox $(N_POINTS) s D20 > $@
+
+# 50d diamond
+$(DATA_DIR)/test6-N$(N_POINTS)-D50.in:
+	@mkdir -p $(DATA_DIR)
+	rbox $(N_POINTS) d D50 > $@
+
+# 200d diamond
+$(DATA_DIR)/test7-N$(N_POINTS)-D200.in:
+	@mkdir -p $(DATA_DIR)
+	rbox $(N_POINTS) d D200 > $@
+
+# worst-case scenario
+$(DATA_DIR)/worst-N$(N_POINTS)-D10.in: $(TARGET_INPUT)
+	@mkdir -p $(DATA_DIR)
+	$(DIR_BIN)/$(EXE_INPUT) $(N_POINTS) 10 > $@
+
+## Special targets
+
+.PHONY: files all help clean purge $(TARGETS) $(EXE)
