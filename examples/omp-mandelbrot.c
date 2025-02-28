@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
             const double im = YMAX - (YMAX - YMIN) * (float) (y) / (YSIZE - 1);
             const int v = iterate(re, im);
 #pragma omp critical
-            drawpixel( x, y, v);
+            drawpixel(x, y, v);
         }
     }
     const double elapsed = omp_get_wtime() - tstart;

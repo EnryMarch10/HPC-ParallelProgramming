@@ -65,7 +65,8 @@ help:
 	@echo "Available targets:"
 	@echo
 	@echo "    help    prints this message"
-	@echo "   files    generate input files"
+	@echo "   input    compile worst case input generator program"
+	@echo "   files    generate all input files"
 	@echo "  serial    compile serial program"
 	@echo "     omp    compile parallel OpenMP program"
 	@echo "     mpi    compile MPI program"

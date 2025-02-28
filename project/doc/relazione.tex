@@ -3,23 +3,22 @@
 \usepackage[margin=1in]{geometry}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage[italian]{babel} % Set language to Italian
-
+\usepackage{parskip} % Avoids paragraph indentation and puts spacing instead
+\usepackage[italian, shorthands=off]{babel} % Without shorthands=off, there is interference with hyperref package for footnotes
 \usepackage{times}
-
 \usepackage{float}
-
 \usepackage{url} % To put URLs
 \usepackage{xurl} % Avoids URLs to overfull \hbox
-
 \usepackage{graphicx}
 % \graphicspath{{img/}} % Images global configuration
-\usepackage[colorlinks=false, pdfborder={0 0 0}]{hyperref}
-
 \usepackage{tabularray} % For tables
-
 \usepackage[table, svgnames]{xcolor}
 \usepackage{listings} % To use listings
+\usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue, pdfborder={0 0 0}, hyperfootnotes=true]{hyperref}
+% You must include hyperref before hypcap
+\usepackage[table, figure]{hypcap} % Ensures that references go to the figure or the table and not the caption
+\usepackage{caption} % To personalize captions
+\captionsetup{font=small} % To make captions font smaller
 
 % Configurazione italiana del listato
 \renewcommand{\lstlistingname}{Listato}
@@ -172,11 +171,8 @@ Nel caso in cui \(N^2 >> D\), si considera \(O(N^2)\), nel caso in cui \(D >> N^
     }
       \textbf{Caso} & \textbf{Complessità} & \textbf{Range} \\
       Pessimo & \(\Theta(N^2D)\) & Tutti i punti sono dello skyline. \\
-      \hline
       Medio & \(\Theta(N^2D)\) & La metà dei punti fanno parte dello skyline. \\
-      \hline
       Ottimo & \(\Theta(ND)\) & Il primo punto analizzato domina tutti gli altri. \\
-      \hline
   \end{tblr}
   \caption{\label{tab:algoritmo_skyline_complessita_casi} Complessità computazionale.}
 \end{table}
@@ -188,7 +184,7 @@ Efficiency (OpenMP).
 
 \section{Versione OpenMP}
 
-Analizzando in codice in \autoref{lst:algoritmo_skyline_seriale} si può notare che:
+Analizzando il codice nel \autoref{lst:algoritmo_skyline_seriale} si può notare che:
 
 \begin{itemize}
   \item Il ciclo di inizializzazione segue il pattern \textit{embarrassingly parallel}.
@@ -264,12 +260,12 @@ Probabilmente, per poter considerare anche l'ultimo core, andrebbero fatti più 
 Questo sbalzo è dovuto al fatto che un core è sempre più attivo degli altri perché nel server ci sono vari processi
 in background che impiegano in parte la CPU e per come il SO schedula i processi nei core che ha a disposizione.
 
-\begin{figure}[H]
+\begin{figure}[h]
   \centering
     \begin{subfigure}{0.45\textwidth}
       \begin{tikzpicture}[scale=0.9]
       \begin{axis}[
-        title={Wall-Clock Time},
+        title={Tempi di esecuzione},
         xlabel={Numero di core \(p\)},
         ylabel={Tempo di esecuzione (s)},
         xmin=1, xmax=11,
@@ -330,13 +326,14 @@ in background che impiegano in parte la CPU e per come il SO schedula i processi
       \end{tikzpicture}
       \caption{\label{fig:openmp_strong_scaling_speedup} OpenMP: accelerazione.}
     \end{subfigure}
+    \caption{OpenMP: tempi di esecuzione e speedup.}
 \end{figure}
 
 Nel grafico in \autoref{fig:openmp_strong_scaling_wall_clock_time} viene mostrato il tempo di esecuzione impiegato nella
 computazione che cala sempre, in modo inversamente proporzionale, all'aumentare dei core.
 Inoltre nel grafico in \autoref{fig:openmp_strong_scaling_speedup} si nota uno speedup quasi lineare.
 
-\begin{figure}[H]
+\begin{figure}[h]
   \centering
     \begin{tikzpicture}[scale=0.8]
       \begin{axis}[
@@ -423,29 +420,17 @@ Da qui \(N\) nelle iterazioni successive (che sono 12) vale \(N = \lceil \sqrt{p
     }
       \textbf{p} & \textbf{N} & \textbf{D} \\
       \textbf{1} & 14434 & 10 \\
-      \hline
       \textbf{2} & 20413 & 10 \\
-      \hline
       \textbf{3} & 25000 & 10 \\
-      \hline
       \textbf{4} & 28868 & 10 \\
-      \hline
       \textbf{5} & 32275 & 10 \\
-      \hline
       \textbf{6} & 35356 & 10 \\
-      \hline
       \textbf{7} & 38189 & 10 \\
-      \hline
       \textbf{8} & 40826 & 10 \\
-      \hline
       \textbf{9} & 43302 & 10 \\
-      \hline
       \textbf{10} & 45644 & 10 \\
-      \hline
       \textbf{11} & 47872 & 10 \\
-      \hline
       \textbf{12} & 50001 & 10 \\
-      \hline
   \end{tblr}
   \caption{\label{tab:openmp_weak_scaling_inputs} Dimensione dell'input all'aumentare del numero di core.}
 \end{table}
@@ -456,7 +441,7 @@ Come input sono state usate le dimensioni riportate in \autoref{tab:openmp_weak_
 Anche in questo caso sono stati omessi i risultati ottenuti con tutti i 12 core per lo stesso motivo già spiegato appena prima
 di riportare i dati della weak scaling efficiency.
 
-\begin{figure}[H]
+\begin{figure}[h]
   \centering
     \begin{tikzpicture}[scale=0.8]
       \begin{axis}[
@@ -526,12 +511,12 @@ Anche in questo caso i dati riportati su OpenMP si riferiscono alla CPU che usa 
 che nella pratica risulta in valori attendibili e addirittura migliori dei test con i dodici core.
 Anche questi dati possono essere trovati nei fogli di calcolo presenti nella documentazione.
 
-\begin{figure}[H]
+\begin{figure}[h]
   \centering
     \begin{subfigure}{0.45\textwidth}
       \begin{tikzpicture}[scale=0.9]
         \begin{axis}[
-          title={Wall-Clock Time},
+          title={Tempi di esecuzione},
           xlabel={Dimensione del problema N (per iterazione)},
           ylabel={Tempo di esecuzione (s)},
           xtick=data,
@@ -570,7 +555,7 @@ Anche questi dati possono essere trovati nei fogli di calcolo presenti nella doc
           \addlegendentry{CUDA}
         \end{axis}
       \end{tikzpicture}
-      \caption{\label{fig:cuda_wall_clock_time} OpenMP e CUDA: tempi di esecuzione.}
+      \caption{\label{fig:cuda_wall_clock_time} Tempi di esecuzione.}
     \end{subfigure}
     \hspace{0.05\textwidth}
     \begin{subfigure}{0.45\textwidth}
@@ -616,8 +601,9 @@ Anche questi dati possono essere trovati nei fogli di calcolo presenti nella doc
           \addlegendentry{CUDA}
         \end{axis}
       \end{tikzpicture}
-      \caption{\label{fig:cuda_throughput} OpenMP e CUDA: throughput.}
+      \caption{\label{fig:cuda_throughput} Throughput.}
     \end{subfigure}
+    \caption{OpenMP e CUDA: tempi di esecuzione e throughput a confronto.}
 \end{figure}
 
 Per quanto riguarda i tempi di esecuzione confrontati in \autoref{fig:cuda_wall_clock_time}, si può notare come i valori di
@@ -625,13 +611,13 @@ OpenMP incrementino molto più velocemente che quelli di CUDA, all'aumentare del
 In \autoref{fig:cuda_throughput}, invece, si può notare come CUDA abbia un throughput che aumenta quasi linearmente, mentre per
 OpenMP questo rimane pressoché costante.
 
-\begin{figure}[H]
+\begin{figure}[h]
   \centering
     \begin{tikzpicture}[scale=0.8]
         \begin{axis}[
           x=1cm,
           width=12cm, height=8cm,
-          title={Speedup (CUDA to OpenMP)},
+          title={Speedup},
           xlabel={Dimensione del problema N (per iterazione)},
           ylabel={Speedup \(S(N)\)},
           xtick=data,
@@ -651,7 +637,7 @@ OpenMP questo rimane pressoché costante.
           \addlegendentry{speedup}
         \end{axis}
     \end{tikzpicture}
-    \caption{\label{fig:cuda_speedup} OpenMP e CUDA: speedup.}
+    \caption{\label{fig:cuda_speedup} OpenMP e CUDA: accelerazione di CUDA rispetto a OpenMP.}
 \end{figure}
 
 In \autoref{fig:cuda_speedup}, si può notare che lo speedup di CUDA rispetto ad OpenMP incrementa linearmente fino quasi a
@@ -659,7 +645,7 @@ stabilizzarsi dopo una certa soglia (\(N = 91289\)).
 
 \section{Conclusioni}
 
-Per concludere, la parallelizzazione dell'algoritmo proposto in \autoref{lst:algoritmo_skyline_seriale} è stata fatta in OpenMP e
+Per concludere, la parallelizzazione dell'algoritmo proposto nel \autoref{lst:algoritmo_skyline_seriale} è stata fatta in OpenMP e
 CUDA.
 Per entrambe sono state analizzate le relative versioni parallele.
 Alla fine, per comparare le due versioni, è stato riportato lo speedup di CUDA rispetto ad OpenMP.
