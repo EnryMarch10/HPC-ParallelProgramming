@@ -28,7 +28,7 @@ The sequence □□□■■■■□ = 00011110 on the second row is the binary
 The file [mpi-rule30.c](base/mpi-rule30.c) contains a serial program that computes the evolution of the Rule 30 CA, from an
 initial condition where only the central cell is 1.
 The program accepts two optional command line parameters: the domain size $N$ and the number of steps `n_steps`.
-At the end, rank 0 saves an image rule30.pbm of size $N \times \textit{n\_steps}$ like the one shown in *Figure 2*.
+At the end, rank 0 saves an image rule30.pbm of size $N \times n \textunderscore steps$ like the one shown in *Figure 2*.
 Each row represents the state of the automaton at a specific time step (1 = black, 0 = white).
 Time moves from top to bottom: the first line is the initial state (time 0), the second line is the state at time 1, and so on.
 
