@@ -96,7 +96,7 @@ The SIMD version requires that:
 
 The program guarantees both conditions by adding columns so that the width is multiple of 4.
 The attribute `width` of structure `PGM_image` is the width of the _padded_ image, while `true_width` is the true width of the
-_actual_ image, $\texttt{width} \geq \texttt{true\_width}$.
+_actual_ image, $width \geq true \textunderscore width$.
 
 To compile:
 
