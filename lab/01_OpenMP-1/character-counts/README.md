@@ -41,7 +41,7 @@ If thread sees character $x$, $x \in \{\texttt{'a'}, \ldots, \texttt{'z'}\}$, it
 When all threads are done, the master computes the result as the column-wise sum of `local_hist`.
 In other words, the number of occurrences of the character `('a' + c)` is:
 
-$$ \texttt{hist}[c] = \sum_{p = 0}^{\texttt{num\_threads} - 1} \texttt{local\_hist}[p][c] $$
+$$ \mathtt{hist}[c] = \sum_{p = 0}^{\mathtt{num_threads} - 1} \mathtt{local_hist}[p][c] $$
 
 Also, don’t forget that there is a reduction on `nlet` that reports the number of letters; this might be done using the
 `reduction()` clause of the `omp for` directive.
